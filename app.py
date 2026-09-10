@@ -18,10 +18,9 @@ def get_gsheets_connection():
             return None
     return None
 
-
 # Configuration de la page
 st.set_page_config(
-    page_title="Massilly - Audit 5S Mobile v14",
+    page_title="Massilly - Audit 5S Mobile v17",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -125,37 +124,32 @@ CRITERES_OFFICIELS = [
     }
 ]
 
-# Initialisation de l'état de session (Session State)
-if "user_authenticated" not in st.session_state:
-    st.session_state.user_authenticated = False
-if "user_role" not in st.session_state:
-    st.session_state.user_role = ""
-if "user_name" not in st.session_state:
-    st.session_state.user_name = ""
-if "user_zone" not in st.session_state:
-    st.session_state.user_zone = ""
-if "audit_started" not in st.session_state:
-    st.session_state.audit_started = False
-if "current_q_idx" not in st.session_state:
-    st.session_state.current_q_idx = 0
-if "answers" not in st.session_state:
-    st.session_state.answers = {}
-if "test_mode" not in st.session_state:
-    st.session_state.test_mode = False
-if "portal_shown" not in st.session_state:
-    st.session_state.portal_shown = False
-if "audit_saved_status" not in st.session_state:
-    st.session_state.audit_saved_status = None
+# Initialisation robuste de l'état de session
+defaults = {
+    "user_authenticated": False,
+    "user_role": "",
+    "user_name": "",
+    "user_zone": "Zone 1",
+    "audit_started": False,
+    "current_q_idx": 0,
+    "answers": {},
+    "test_mode": False,
+    "portal_shown": False,
+    "audit_completed_screen": False,
+    "last_sync_status": (False, "")
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
-# Définition dynamique des fichiers de données selon le mode (Réel vs Test)
-if st.session_state.test_mode:
+# Définition dynamique des fichiers de données
+if st.session_state.get("test_mode", False):
     SHARED_DATA_FILE = "test_suivi_audits_5s.csv"
     SHARED_LOG_FILE = "test_journal_activite_5s.json"
 else:
     SHARED_DATA_FILE = "suivi_audits_5s.csv"
     SHARED_LOG_FILE = "journal_activite_5s.json"
 
-# Création automatique des fichiers s'ils n'existent pas
 if not os.path.exists(SHARED_DATA_FILE):
     colonnes_init = [
         "Date", "Zone", "Sponsor", "Auditeur", "Role",
@@ -176,7 +170,7 @@ def charger_audits():
             if df is not None and not df.empty:
                 df = df.dropna(how="all")
                 return df
-        except Exception as e:
+        except Exception:
             pass
 
     try:
@@ -186,6 +180,7 @@ def charger_audits():
 
 def sauvegarder_audit_local(data_dict):
     gsheets_ok = False
+    err_msg = ""
     conn = get_gsheets_connection()
     if conn is not None:
         try:
@@ -195,8 +190,9 @@ def sauvegarder_audit_local(data_dict):
                     existing_df = pd.DataFrame()
                 else:
                     existing_df = existing_df.dropna(how="all")
-            except Exception:
+            except Exception as e:
                 existing_df = pd.DataFrame()
+                err_msg = str(e)
                 
             new_row = pd.DataFrame([data_dict])
             if not existing_df.empty:
@@ -207,7 +203,7 @@ def sauvegarder_audit_local(data_dict):
             conn.update(data=updated_df)
             gsheets_ok = True
         except Exception as e:
-            st.error(f"⚠️ Erreur Google Sheets : {e}")
+            err_msg = str(e)
 
     # Backup local CSV
     try:
@@ -222,9 +218,9 @@ def sauvegarder_audit_local(data_dict):
     # Journal JSON
     log_entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "type": "TEST - Diagnostic" if st.session_state.test_mode else "Diagnostic Réel",
-        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)\"",
-        "gsheets": "OK" if gsheets_ok else "OFFLINE"
+        "type": "TEST - Diagnostic" if st.session_state.get("test_mode", False) else "Diagnostic Réel",
+        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)",
+        "gsheets": "OK" if gsheets_ok else f"OFFLINE ({err_msg})"
     }
     try:
         with open(SHARED_LOG_FILE, 'r', encoding='utf-8') as f:
@@ -235,10 +231,10 @@ def sauvegarder_audit_local(data_dict):
     with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
         json.dump(logs, f, ensure_ascii=False, indent=4)
 
-    return gsheets_ok
+    return gsheets_ok, err_msg
 
 
-# ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY RAL 5017
+# ========================================== STYLE CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;700;800&family=Playfair+Display:ital,wght=0,600;0,800;1,600&display=swap');
@@ -839,16 +835,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Affichage permanent du titre principal extrudé et flottant 3D
+
+# Affichage permanent du titre principal
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
 
 # Affichage du badge de Test si actif
-if st.session_state.test_mode:
+if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== EFFET CINÉMATIQUE PORTE DOUBLE (WAHOU ENTRÉE)
-if st.session_state.user_authenticated and not st.session_state.portal_shown:
+# ========================================== EFFET CINÉMATIQUE PORTE DOUBLE
+if st.session_state.get("user_authenticated", False) and not st.session_state.get("portal_shown", False):
     st.markdown("""
     <div class="portal-container">
         <!-- PORTAL DOOR LEFT -->
@@ -873,17 +870,14 @@ if st.session_state.user_authenticated and not st.session_state.portal_shown:
 
 
 # ========================================== ÉCRAN 1 : CONNEXION ET CRÉATION DE PROFIL
-if not st.session_state.user_authenticated:
-    # Grosse plaque 3D "PORTAIL D'IDENTIFICATION" (Remplace la ligne blanche inutile et s'affiche plus gros)
+if not st.session_state.get("user_authenticated", False):
     st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
     
-    # 1. Sélection du Rôle
     role = st.selectbox(
         "Sélectionnez votre rôle :",
         ["Sponsor de zone", "Référent 5S", "Éditeur (Méthodes / Alternant)"]
     )
     
-    # Liste nominative de l'usine
     personnes_massilly = [
         "Labbé Damien (Alternant)",
         "Audrey Sordet (Sponsor Z1)",
@@ -899,7 +893,6 @@ if not st.session_state.user_authenticated:
         "Autre (Saisie manuelle)..."
     ]
     
-    # 2. Sélection du Nom
     nom_select = st.selectbox("Sélectionnez votre Prénom & Nom :", personnes_massilly)
     
     if nom_select == "Autre (Saisie manuelle)...":
@@ -907,7 +900,6 @@ if not st.session_state.user_authenticated:
     else:
         nom_complet = nom_select.split(" (")[0]
         
-    # 3. Sélection de la Zone
     liste_zones = list(ZONES_MASSILLY.keys())
     zone_select = st.selectbox(
         "Zone logistique ciblée :",
@@ -915,12 +907,12 @@ if not st.session_state.user_authenticated:
         format_func=lambda x: ZONES_MASSILLY[x]["label"]
     )
     
-    # Choix du Mode Test
     st.markdown("---")
     st.markdown("### Configuration de la base de données")
     st.session_state.test_mode = st.checkbox(
         "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
-        value=st.session_state.test_mode
+        value=st.session_state.get("test_mode", False),
+        key="chk_test_mode"
     )
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -933,85 +925,80 @@ if not st.session_state.user_authenticated:
             st.session_state.user_name = nom_complet
             st.session_state.user_zone = zone_select
             st.session_state.user_authenticated = True
-            st.session_state.portal_shown = False # Réinitialise l'ouverture cinématique pour l'accès
+            st.session_state.portal_shown = False
             st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ========================================== APPLICATION PRINCIPALE (UTILISATEUR CONNECTÉ)
+# ========================================== APPLICATION PRINCIPALE
 else:
-    # Bandeau supérieur d'information de session
     col_u1, col_u2 = st.columns([4, 1])
     with col_u1:
         st.markdown(
             f"👤 **{st.session_state.user_name}** ({st.session_state.user_role}) | Zone active : **{ZONES_MASSILLY[st.session_state.user_zone]['label']}**"
         )
     with col_u2:
-        st.markdown("<div class='small-btn-container'>", unsafe_allow_html=True)
         if st.button("🔄 Changer d'utilisateur", use_container_width=True):
             st.session_state.user_authenticated = False
             st.session_state.audit_started = False
             st.session_state.current_q_idx = 0
             st.session_state.answers = {}
             st.session_state.portal_shown = False
+            st.session_state.audit_completed_screen = False
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
             
     st.markdown("---")
 
-    # Onglets horizontaux de navigation (Relookés en boutons command-plates 3D par CSS)
     onglets = ["📋 Saisie d'Audit terrain", "📊 Analyse & Historique", "🗺️ Rappel des Standards"]
     menu_actif = st.radio("Menu principal :", onglets, horizontal=True, key="menu_actif")
 
     st.markdown("---")
 
-    # ========================================== ONGLET 1 : SAISIE D'AUDIT COMPORTEMENTAL
+    # ========================================== ONGLET 1 : SAISIE D'AUDIT
     if menu_actif == "📋 Saisie d'Audit terrain":
         
-        # Étape 0 : Écran de confirmation si un audit vient d'être sauvegardé
-        if st.session_state.get("audit_saved_status") is not None:
-            status = st.session_state.audit_saved_status
-            if status.get("gsheets", False):
-                st.success("🎉 DIAGNOSTIC AUDIT 5S ENREGISTRÉ ET SYNCHRONISÉ AVEC SUCCÈS DANS GOOGLE SHEETS !")
+        # CAS A : ÉCRAN DE CONFIRMATION PERMANENT APRÈS ENREGISTREMENT
+        if st.session_state.get("audit_completed_screen", False):
+            gsheets_ok, err_msg = st.session_state.get("last_sync_status", (False, ""))
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if gsheets_ok:
+                st.success("🎉 DIAGNOSTIC TERMINÉ ET SYNCHRONISÉ AVEC SUCCÈS DANS GOOGLE SHEETS !")
                 st.balloons()
             else:
-                st.warning("⚠️ Diagnostic enregistré dans la base de sauvegarde locale.")
-                if status.get("err"):
-                    st.error(f"❌ Détail de l'erreur Google Sheets : {status['err']}")
-                    
+                st.warning("⚠️ DIAGNOSTIC ENREGISTRÉ LOCALEMENT.")
+                if err_msg:
+                    st.info(f"Information Google Sheets : {err_msg}")
+            
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("🚀 DÉMARRER UN NOUVEL AUDIT", use_container_width=True):
-                st.session_state.audit_saved_status = None
+            if st.button("🚀 DÉMARRER UN NOUVEL AUDIT 5S", use_container_width=True):
+                st.session_state.audit_completed_screen = False
                 st.session_state.audit_started = False
                 st.session_state.current_q_idx = 0
                 st.session_state.answers = {}
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
 
-        # Étape 1 : Proposition de départ de l'audit (AVEC MASTER CARD BOUTON 3D COMBINÉ)
-        elif not st.session_state.audit_started:
+        # CAS B : PAS ENCORE DEPARTÉ
+        elif not st.session_state.get("audit_started", False):
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
-            # Les deux textes fusionnés dans un bouton-carte géant de niveau Prestige avec la fusée rotative intégrée par CSS
             btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.user_zone]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.user_zone]['sponsor']}"
             if st.button(btn_label, use_container_width=True):
                 st.session_state.audit_started = True
                 st.session_state.current_q_idx = 0
                 st.session_state.answers = {}
+                st.session_state.audit_completed_screen = False
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
             
-        # Étape 2 : Déroulement de l'audit critère par critère
+        # CAS C : DÉROULEMENT DU QUESTIONNAIRE
         else:
-            idx = st.session_state.current_q_idx
+            idx = st.session_state.get("current_q_idx", 0)
             
             if idx < 15:
                 crit = CRITERES_OFFICIELS[idx]
                 
-                # Progression
                 st.progress(idx / 15)
                 st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Critère {idx+1} sur 15</p>", unsafe_allow_html=True)
                 
-                # CARTE DU CRITÈRE 3D (Contraste maximal noir sur blanc)
                 st.markdown(f"""
                 <div class="question-card">
                     <div class="question-cat">{crit['cat']}</div>
@@ -1021,7 +1008,6 @@ else:
                 
                 st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 15px;'>Valider l'état sur le terrain :</p>", unsafe_allow_html=True)
                 
-                # 3 Boutons géants de vote tactile 3D
                 col_o, col_n, col_na = st.columns(3)
                 with col_o:
                     if st.button("🟢 OUI", use_container_width=True, key=f"btn_o_{idx}"):
@@ -1039,7 +1025,6 @@ else:
                         st.session_state.current_q_idx += 1
                         st.rerun()
                 
-                # --- RETOUR EN ARRIÈRE (Centré sous les boutons) ---
                 if idx > 0:
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
@@ -1048,20 +1033,19 @@ else:
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-            # Étape 3 : Fin d'audit et écran de synthèse
+            # SYNTHÈSE ET VALISATION
             else:
                 st.success("🎉 Évaluation terminée !")
                 st.subheader("Synthèse de l'évaluation")
                 
-                # Calculs des scores
-                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                answers = st.session_state.get("answers", {})
+                t_oui = sum(1 for v in answers.values() if v == "OUI")
+                t_non = sum(1 for v in answers.values() if v == "NON")
+                t_na = sum(1 for v in answers.values() if v == "N/A")
                 t_app = 15 - t_na
                 
                 score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
                 
-                # Score d'affichage (Métriques 3D flottantes)
                 col_s1, col_s2 = st.columns(2)
                 with col_s1:
                     st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
@@ -1072,14 +1056,12 @@ else:
                 obs = st.text_area("Remarques / Anomalies constatées :")
                 act = st.text_area("Plan d'action corrective :")
                 
-                # Récapitulatif
                 with st.expander("🔎 Afficher le récapitulatif détaillé"):
                     for c in CRITERES_OFFICIELS:
-                        rep = st.session_state.answers.get(c["id"], "N/A")
+                        rep = answers.get(c["id"], "N/A")
                         bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
                         st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
                 
-                # Actions de validation finales (Le bouton d'enregistrement hérite du style prestige 3D)
                 st.markdown("<br>", unsafe_allow_html=True)
                 col_end1, col_end2 = st.columns(2)
                 with col_end1:
@@ -1088,20 +1070,23 @@ else:
                         st.session_state.audit_started = False
                         st.session_state.current_q_idx = 0
                         st.session_state.answers = {}
+                        st.session_state.audit_completed_screen = False
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                 with col_end2:
                     st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
                     if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                        # Enregistrement
-                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
+                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in answers.items()}
+                        
+                        user_zone = st.session_state.get("user_zone", "Zone 1")
+                        sponsor = ZONES_MASSILLY.get(user_zone, {}).get("sponsor", "")
                         
                         row_data = {
                             "Date": datetime.now().strftime("%Y-%m-%d"),
-                            "Zone": st.session_state.user_zone,
-                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
-                            "Auditeur": st.session_state.user_name,
-                            "Role": st.session_state.user_role,
+                            "Zone": user_zone,
+                            "Sponsor": sponsor,
+                            "Auditeur": st.session_state.get("user_name", ""),
+                            "Role": st.session_state.get("user_role", ""),
                             "Score_Total": t_oui,
                             "Pourcentage": score_final_pct,
                             "Observations": obs,
@@ -1109,21 +1094,14 @@ else:
                         }
                         row_data.update(sc_num)
                         
-                        synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
+                        gsheets_ok, err_msg = sauvegarder_audit_local(row_data)
                         
-                        st.session_state.audit_saved_status = {
-                            "gsheets": synced_gsheets,
-                            "err": err_msg,
-                            "zone": st.session_state.user_zone,
-                            "score": score_final_pct
-                        }
-                        st.session_state.audit_started = False
-                        st.session_state.current_q_idx = 0
-                        st.session_state.answers = {}
+                        st.session_state.last_sync_status = (gsheets_ok, err_msg)
+                        st.session_state.audit_completed_screen = True
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE (KPIs 3D)
+    # ========================================== ONGLET 2 : ANALYSE
     elif menu_actif == "📊 Analyse & Historique":
         st.subheader("Historique d'Amélioration Continue")
         
@@ -1133,36 +1111,36 @@ else:
             st.warning("Aucune donnée enregistrée dans ce mode d'accès.")
         else:
             tot = len(df)
-            moy = int(df["Pourcentage"].mean())
+            moy = int(df["Pourcentage"].mean()) if "Pourcentage" in df.columns else 0
             last_row = df.iloc[-1]
             
-            # 3 Métriques en boites 3D en suspension
             k_1, k_2, k_3 = st.columns(3)
             with k_1:
                 st.metric("Audits Complétés", tot)
             with k_2:
                 st.metric("Performance Moyenne", f"{moy} %")
             with k_3:
-                st.metric("Dernière Zone Évaluée", f"{last_row['Zone']} ({last_row['Pourcentage']}%)\"")
+                st.metric("Dernière Zone Évaluée", f"{last_row.get('Zone', '')} ({last_row.get('Pourcentage', '')}%)")
                 
             st.markdown("### Journal d'activité (Données du fichier CSV)")
             champs = ["Date", "Zone", "Sponsor", "Auditeur", "Role", "Score_Total", "Pourcentage", "Observations", "Actions_Correctives"]
-            st.dataframe(df[champs].sort_values(by="Date", ascending=False), use_container_width=True)
+            valid_champs = [c for c in champs if c in df.columns]
+            st.dataframe(df[valid_champs].sort_values(by="Date", ascending=False), use_container_width=True)
 
             try:
-                df_c = df.pivot_table(index="Date", columns="Zone", values="Pourcentage", aggfunc='last').ffill()
-                st.markdown("### Courbes de Progrès par Zone")
-                st.line_chart(df_c)
+                if "Date" in df.columns and "Zone" in df.columns and "Pourcentage" in df.columns:
+                    df_c = df.pivot_table(index="Date", columns="Zone", values="Pourcentage", aggfunc='last').ffill()
+                    st.markdown("### Courbes de Progrès par Zone")
+                    st.line_chart(df_c)
             except Exception:
                 pass
 
-    # ========================================== ONGLET 3 : RAPPEL DES CODES DE L'USINE MASSILLY
+    # ========================================== ONGLET 3 : STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
         st.subheader("Les Impératifs Physiques et Visuels de Massilly")
         
         col_st1, col_st2 = st.columns(2)
         with col_st1:
-            # Plaque blanche 3D de rappel standard
             st.markdown("""
             <div class="question-card" style="border-left-color: #EF4444 !important;">
                 <h4 style="color: #EF4444 !important; font-weight: 800; margin-bottom: 12px;">🟥 Le Code de Couleur au Sol (Standard Massilly)</h4>
