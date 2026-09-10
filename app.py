@@ -144,10 +144,8 @@ if "test_mode" not in st.session_state:
     st.session_state.test_mode = False
 if "portal_shown" not in st.session_state:
     st.session_state.portal_shown = False
-if "audit_submitted" not in st.session_state:
-    st.session_state.audit_submitted = False
-if "save_status" not in st.session_state:
-    st.session_state.save_status = (False, "")
+if "audit_saved_status" not in st.session_state:
+    st.session_state.audit_saved_status = None
 
 # Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.test_mode:
@@ -969,8 +967,29 @@ else:
     # ========================================== ONGLET 1 : SAISIE D'AUDIT COMPORTEMENTAL
     if menu_actif == "📋 Saisie d'Audit terrain":
         
+        # Étape 0 : Écran de confirmation si un audit vient d'être sauvegardé
+        if st.session_state.get("audit_saved_status") is not None:
+            status = st.session_state.audit_saved_status
+            if status.get("gsheets", False):
+                st.success("🎉 DIAGNOSTIC AUDIT 5S ENREGISTRÉ ET SYNCHRONISÉ AVEC SUCCÈS DANS GOOGLE SHEETS !")
+                st.balloons()
+            else:
+                st.warning("⚠️ Diagnostic enregistré dans la base de sauvegarde locale.")
+                if status.get("err"):
+                    st.error(f"❌ Détail de l'erreur Google Sheets : {status['err']}")
+                    
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("🚀 DÉMARRER UN NOUVEL AUDIT", use_container_width=True):
+                st.session_state.audit_saved_status = None
+                st.session_state.audit_started = False
+                st.session_state.current_q_idx = 0
+                st.session_state.answers = {}
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
         # Étape 1 : Proposition de départ de l'audit (AVEC MASTER CARD BOUTON 3D COMBINÉ)
-        if not st.session_state.audit_started:
+        elif not st.session_state.audit_started:
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
             # Les deux textes fusionnés dans un bouton-carte géant de niveau Prestige avec la fusée rotative intégrée par CSS
             btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.user_zone]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.user_zone]['sponsor']}"
@@ -1029,101 +1048,80 @@ else:
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-            # Étape 3 : Fin d'audit et écran de synthèse / confirmation
+            # Étape 3 : Fin d'audit et écran de synthèse
             else:
-                if st.session_state.get("audit_submitted", False):
-                    # PAGE DE CONFIRMATION PERMANENTE
-                    st.balloons()
-                    st.markdown("<div class='question-card' style='text-align: center; border-left-color: #10B981 !important;'>", unsafe_allow_html=True)
-                    st.markdown("<h2 style='color: #0E529E !important; font-weight: 900;'>🎉 DIAGNOSTIC TERMINÉ ET CONFIRMÉ !</h2>", unsafe_allow_html=True)
-                    
-                    ok_gs, err_gs = st.session_state.get("save_status", (False, ""))
-                    if ok_gs:
-                        st.success("✅ Synchronisation réussie : Le diagnostic a été ajouté directement dans votre Google Sheet en temps réel !")
-                    else:
-                        st.warning("⚠️ Sauvegarde effectuée dans le fichier de secours local.")
-                        if err_gs:
-                            st.error(f"Détail de la connexion Google Sheets : {err_gs}")
-                        else:
-                            st.info("Vérifiez vos secrets TOML dans Streamlit Cloud si vous souhaitez la synchronisation Google Sheets.")
-                            
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                    if st.button("🚀 NOUVEL AUDIT 5S", use_container_width=True):
+                st.success("🎉 Évaluation terminée !")
+                st.subheader("Synthèse de l'évaluation")
+                
+                # Calculs des scores
+                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
+                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
+                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                t_app = 15 - t_na
+                
+                score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
+                
+                # Score d'affichage (Métriques 3D flottantes)
+                col_s1, col_s2 = st.columns(2)
+                with col_s1:
+                    st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
+                with col_s2:
+                    st.metric("Taux de Conformité Final", f"{score_final_pct} %")
+                
+                st.markdown("### 📝 Observations terrain")
+                obs = st.text_area("Remarques / Anomalies constatées :")
+                act = st.text_area("Plan d'action corrective :")
+                
+                # Récapitulatif
+                with st.expander("🔎 Afficher le récapitulatif détaillé"):
+                    for c in CRITERES_OFFICIELS:
+                        rep = st.session_state.answers.get(c["id"], "N/A")
+                        bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
+                        st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
+                
+                # Actions de validation finales (Le bouton d'enregistrement hérite du style prestige 3D)
+                st.markdown("<br>", unsafe_allow_html=True)
+                col_end1, col_end2 = st.columns(2)
+                with col_end1:
+                    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                    if st.button("❌ Réinitialiser l'audit", use_container_width=True):
                         st.session_state.audit_started = False
-                        st.session_state.audit_submitted = False
                         st.session_state.current_q_idx = 0
                         st.session_state.answers = {}
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
-
-                else:
-                    st.success("🎉 Évaluation terminée !")
-                    st.subheader("Synthèse de l'évaluation")
-                    
-                    # Calculs des scores
-                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                    t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                    t_app = 15 - t_na
-                    
-                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                    
-                    # Score d'affichage (Métriques 3D flottantes)
-                    col_s1, col_s2 = st.columns(2)
-                    with col_s1:
-                        st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
-                    with col_s2:
-                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                    
-                    st.markdown("### 📝 Observations terrain")
-                    obs = st.text_area("Remarques / Anomalies constatées :")
-                    act = st.text_area("Plan d'action corrective :")
-                    
-                    # Récapitulatif
-                    with st.expander("🔎 Afficher le récapitulatif détaillé"):
-                        for c in CRITERES_OFFICIELS:
-                            rep = st.session_state.answers.get(c["id"], "N/A")
-                            bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
-                            st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
-                    
-                    # Actions de validation finales
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_end1, col_end2 = st.columns(2)
-                    with col_end1:
-                        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                        if st.button("❌ Réinitialiser l'audit", use_container_width=True):
-                            st.session_state.audit_started = False
-                            st.session_state.audit_submitted = False
-                            st.session_state.current_q_idx = 0
-                            st.session_state.answers = {}
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    with col_end2:
-                        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                        if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                            sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
-                            
-                            row_data = {
-                                "Date": datetime.now().strftime("%Y-%m-%d"),
-                                "Zone": st.session_state.user_zone,
-                                "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
-                                "Auditeur": st.session_state.user_name,
-                                "Role": st.session_state.user_role,
-                                "Score_Total": t_oui,
-                                "Pourcentage": score_final_pct,
-                                "Observations": obs,
-                                "Actions_Correctives": act
-                            }
-                            row_data.update(sc_num)
-                            
-                            synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
-                            st.session_state.save_status = (synced_gsheets, err_msg)
-                            st.session_state.audit_submitted = True
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
+                with col_end2:
+                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                    if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
+                        # Enregistrement
+                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
+                        
+                        row_data = {
+                            "Date": datetime.now().strftime("%Y-%m-%d"),
+                            "Zone": st.session_state.user_zone,
+                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
+                            "Auditeur": st.session_state.user_name,
+                            "Role": st.session_state.user_role,
+                            "Score_Total": t_oui,
+                            "Pourcentage": score_final_pct,
+                            "Observations": obs,
+                            "Actions_Correctives": act
+                        }
+                        row_data.update(sc_num)
+                        
+                        synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
+                        
+                        st.session_state.audit_saved_status = {
+                            "gsheets": synced_gsheets,
+                            "err": err_msg,
+                            "zone": st.session_state.user_zone,
+                            "score": score_final_pct
+                        }
+                        st.session_state.audit_started = False
+                        st.session_state.current_q_idx = 0
+                        st.session_state.answers = {}
+                        st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
     # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE (KPIs 3D)
     elif menu_actif == "📊 Analyse & Historique":
