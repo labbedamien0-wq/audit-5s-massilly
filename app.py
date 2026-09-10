@@ -4,6 +4,21 @@ import json
 import os
 from datetime import datetime
 
+try:
+    from streamlit_gsheets import GSheetsConnection
+    HAS_GSHEETS = True
+except ImportError:
+    HAS_GSHEETS = False
+
+def get_gsheets_connection():
+    if HAS_GSHEETS:
+        try:
+            return st.connection("gsheets", type=GSheetsConnection)
+        except Exception:
+            return None
+    return None
+
+
 # Configuration de la page
 st.set_page_config(
     page_title="Massilly - Audit 5S Mobile v14",
@@ -152,22 +167,62 @@ if not os.path.exists(SHARED_LOG_FILE):
         json.dump([], f, ensure_ascii=False)
 
 def charger_audits():
+    conn = get_gsheets_connection()
+    if conn is not None:
+        try:
+            df = conn.read(ttl=0)
+            if df is not None and not df.empty:
+                df = df.dropna(how="all")
+                return df
+        except Exception as e:
+            pass
+
     try:
         return pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
     except Exception:
         return pd.DataFrame()
 
 def sauvegarder_audit_local(data_dict):
-    df = charger_audits()
+    gsheets_ok = False
+    conn = get_gsheets_connection()
+    if conn is not None:
+        try:
+            try:
+                existing_df = conn.read(ttl=0)
+                if existing_df is None or existing_df.empty:
+                    existing_df = pd.DataFrame()
+                else:
+                    existing_df = existing_df.dropna(how="all")
+            except Exception:
+                existing_df = pd.DataFrame()
+                
+            new_row = pd.DataFrame([data_dict])
+            if not existing_df.empty:
+                updated_df = pd.concat([existing_df, new_row], ignore_index=True)
+            else:
+                updated_df = new_row
+                
+            conn.update(data=updated_df)
+            gsheets_ok = True
+        except Exception as e:
+            st.error(f"⚠️ Erreur Google Sheets : {e}")
+
+    # Backup local CSV
+    try:
+        df = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
+    except Exception:
+        df = pd.DataFrame()
+
     new_row = pd.DataFrame([data_dict])
     df = pd.concat([df, new_row], ignore_index=True)
     df.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
-    
+
     # Journal JSON
     log_entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "TEST - Diagnostic" if st.session_state.test_mode else "Diagnostic Réel",
-        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)\""
+        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)\"",
+        "gsheets": "OK" if gsheets_ok else "OFFLINE"
     }
     try:
         with open(SHARED_LOG_FILE, 'r', encoding='utf-8') as f:
@@ -177,6 +232,8 @@ def sauvegarder_audit_local(data_dict):
     logs.append(log_entry)
     with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
         json.dump(logs, f, ensure_ascii=False, indent=4)
+
+    return gsheets_ok
 
 
 # ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY RAL 5017
@@ -1029,9 +1086,12 @@ else:
                         }
                         row_data.update(sc_num)
                         
-                        sauvegarder_audit_local(row_data)
+                        synced_gsheets = sauvegarder_audit_local(row_data)
                         
-                        st.success(f"✅ Enregistrement effectué avec succès dans le fichier {SHARED_DATA_FILE} !")
+                        if synced_gsheets:
+                            st.success("✅ Enregistrement effectué avec succès dans Google Sheets et synchronisé en temps réel !")
+                        else:
+                            st.success(f"✅ Enregistrement effectué avec succès dans le fichier {SHARED_DATA_FILE} !")
                         st.balloons()
                         
                         st.session_state.audit_started = False
