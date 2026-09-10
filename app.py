@@ -11,23 +11,166 @@ except ImportError:
     HAS_GSHEETS = False
 
 def get_gsheets_connection():
-    if not HAS_GSHEETS:
-        return None, "La bibliothèque 'st-gsheets-connection' n'est pas installée sur Streamlit Cloud (vérifiez votre fichier requirements.txt)."
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        return conn, None
-    except Exception as e:
-        return None, str(e)
+    if HAS_GSHEETS:
+        try:
+            return st.connection("gsheets", type=GSheetsConnection)
+        except Exception:
+            return None
+    return None
+
+
+# Configuration de la page
+st.set_page_config(
+    page_title="Massilly - Audit 5S Mobile v14",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# Données des zones et sponsors officiels de Massilly
+ZONES_MASSILLY = {
+    "Zone 1": {"label": "Zone 1 - Filmeuse et quais production", "sponsor": "Audrey Sordet"},
+    "Zone 2": {"label": "Zone 2 - Bureaux expédition", "sponsor": "Anthony Duplessis"},
+    "Zone 3": {"label": "Zone 3 - Quai chargement", "sponsor": "Jonathan Mele"},
+    "Zone 4": {"label": "Zone 4 - Zone préparation commande", "sponsor": "Thomas Collin"},
+    "Zone 5": {"label": "Zone 5 - Emplacements boîtes", "sponsor": "Gaspard Sommereux"},
+    "Zone 6": {"label": "Zone 6 - Palettier", "sponsor": "Mariia Leliukh"},
+    "Zone 7": {"label": "Zone 7 - Bureaux et zones réception MP", "sponsor": "Céline Hereng"},
+    "Zone 8": {"label": "Zone 8 - Zone stockage métal", "sponsor": "Dimitri Dupasquier"},
+    "Zone 9": {"label": "Zone 9 - Local joint", "sponsor": "Frédéric Bouvy"},
+    "Zone 10": {"label": "Zone 10 - Stockage produits dangereux", "sponsor": "Nathalie Berthelin"}
+}
+
+# Les 15 critères d'audit officiels de Massilly
+CRITERES_OFFICIELS = [
+    # Seiri (Trier)
+    {
+        "id": "c1",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."
+    },
+    {
+        "id": "c2",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."
+    },
+    {
+        "id": "c3",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."
+    },
+    # Seiton (Ranger)
+    {
+        "id": "c4",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."
+    },
+    {
+        "id": "c5",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."
+    },
+    {
+        "id": "c6",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."
+    },
+    # Seiso (Nettoyer)
+    {
+        "id": "c7",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."
+    },
+    {
+        "id": "c8",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."
+    },
+    {
+        "id": "c9",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."
+    },
+    # Seiketsu (Standardiser)
+    {
+        "id": "c10",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."
+    },
+    {
+        "id": "c11",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."
+    },
+    {
+        "id": "c12",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."
+    },
+    # Shitsuke (Maintenir)
+    {
+        "id": "c13",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."
+    },
+    {
+        "id": "c14",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."
+    },
+    {
+        "id": "c15",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."
+    }
+]
+
+# Initialisation ultra-sécurisée et inconditionnelle du Session State
+INITIAL_STATE = {
+    "user_authenticated": False,
+    "user_role": "",
+    "user_name": "",
+    "user_zone": "Zone 1",
+    "audit_started": False,
+    "current_q_idx": 0,
+    "answers": {},
+    "test_mode": False,
+    "portal_shown": False
+}
+for k, v in INITIAL_STATE.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+# Définition dynamique des fichiers de données selon le mode (Réel vs Test)
+if st.session_state.get("test_mode", False):
+    SHARED_DATA_FILE = "test_suivi_audits_5s.csv"
+    SHARED_LOG_FILE = "test_journal_activite_5s.json"
+else:
+    SHARED_DATA_FILE = "suivi_audits_5s.csv"
+    SHARED_LOG_FILE = "journal_activite_5s.json"
+
+# Création automatique des fichiers s'ils n'existent pas
+if not os.path.exists(SHARED_DATA_FILE):
+    colonnes_init = [
+        "Date", "Zone", "Sponsor", "Auditeur", "Role",
+        "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10", "c11", "c12", "c13", "c14", "c15",
+        "Score_Total", "Pourcentage", "Observations", "Actions_Correctives"
+    ]
+    pd.DataFrame(columns=colonnes_init).to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
+
+if not os.path.exists(SHARED_LOG_FILE):
+    with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
+        json.dump([], f, ensure_ascii=False)
 
 def charger_audits():
-    conn, err = get_gsheets_connection()
+    conn = get_gsheets_connection()
     if conn is not None:
         try:
             df = conn.read(ttl=0)
             if df is not None and not df.empty:
                 df = df.dropna(how="all")
                 return df
-        except Exception:
+        except Exception as e:
             pass
 
     try:
@@ -35,56 +178,58 @@ def charger_audits():
     except Exception:
         return pd.DataFrame()
 
-def sauvegarder_audit(data_dict):
-    conn, err_conn = get_gsheets_connection()
-    
-    # Si la connexion échoue d'emblée
-    if conn is None:
+def sauvegarder_audit_local(data_dict):
+    gsheets_ok = False
+    conn = get_gsheets_connection()
+    if conn is not None:
         try:
-            df_local = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
-        except Exception:
-            df_local = pd.DataFrame()
-        new_row = pd.DataFrame([data_dict])
-        df_local = pd.concat([df_local, new_row], ignore_index=True)
-        df_local.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
-        return False, f"Connexion Google Sheets impossible : {err_conn}"
-
-    try:
-        try:
-            existing_df = conn.read(ttl=0)
-            if existing_df is None or existing_df.empty:
+            try:
+                existing_df = conn.read(ttl=0)
+                if existing_df is None or existing_df.empty:
+                    existing_df = pd.DataFrame()
+                else:
+                    existing_df = existing_df.dropna(how="all")
+            except Exception:
                 existing_df = pd.DataFrame()
+                
+            new_row = pd.DataFrame([data_dict])
+            if not existing_df.empty:
+                updated_df = pd.concat([existing_df, new_row], ignore_index=True)
             else:
-                existing_df = existing_df.dropna(how="all")
-        except Exception:
-            existing_df = pd.DataFrame()
+                updated_df = new_row
+                
+            conn.update(data=updated_df)
+            gsheets_ok = True
+        except Exception as e:
+            st.error(f"⚠️ Erreur Google Sheets : {e}")
 
-        new_row = pd.DataFrame([data_dict])
-        if not existing_df.empty:
-            updated_df = pd.concat([existing_df, new_row], ignore_index=True)
-        else:
-            updated_df = new_row
+    # Backup local CSV
+    try:
+        df = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
+    except Exception:
+        df = pd.DataFrame()
 
-        conn.update(data=updated_df)
+    new_row = pd.DataFrame([data_dict])
+    df = pd.concat([df, new_row], ignore_index=True)
+    df.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
 
-        # Copie locale
-        try:
-            df_local = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
-        except Exception:
-            df_local = pd.DataFrame()
-        df_local = pd.concat([df_local, new_row], ignore_index=True)
-        df_local.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
+    # Journal JSON
+    log_entry = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "TEST - Diagnostic" if st.session_state.test_mode else "Diagnostic Réel",
+        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)\"",
+        "gsheets": "OK" if gsheets_ok else "OFFLINE"
+    }
+    try:
+        with open(SHARED_LOG_FILE, 'r', encoding='utf-8') as f:
+            logs = json.load(f)
+    except Exception:
+        logs = []
+    logs.append(log_entry)
+    with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(logs, f, ensure_ascii=False, indent=4)
 
-        return True, "✅ Diagnostic enregistré avec succès dans Google Sheets en temps réel !"
-    except Exception as e:
-        try:
-            df_local = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
-        except Exception:
-            df_local = pd.DataFrame()
-        new_row = pd.DataFrame([data_dict])
-        df_local = pd.concat([df_local, new_row], ignore_index=True)
-        df_local.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
-        return False, f"Erreur lors de l'écriture Google Sheets : {str(e)}"
+    return gsheets_ok
 
 
 # ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY RAL 5017
@@ -692,12 +837,12 @@ st.markdown("""
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
 
 # Affichage du badge de Test si actif
-if st.session_state.test_mode:
+if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
 # ========================================== EFFET CINÉMATIQUE PORTE DOUBLE (WAHOU ENTRÉE)
-if st.session_state.user_authenticated and not st.session_state.portal_shown:
+if st.session_state.get("user_authenticated", False) and not st.session_state.get("portal_shown", False):
     st.markdown("""
     <div class="portal-container">
         <!-- PORTAL DOOR LEFT -->
@@ -722,7 +867,7 @@ if st.session_state.user_authenticated and not st.session_state.portal_shown:
 
 
 # ========================================== ÉCRAN 1 : CONNEXION ET CRÉATION DE PROFIL
-if not st.session_state.user_authenticated:
+if not st.session_state.get("user_authenticated", False):
     # Grosse plaque 3D "PORTAIL D'IDENTIFICATION" (Remplace la ligne blanche inutile et s'affiche plus gros)
     st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
     
@@ -769,7 +914,8 @@ if not st.session_state.user_authenticated:
     st.markdown("### Configuration de la base de données")
     st.session_state.test_mode = st.checkbox(
         "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
-        value=st.session_state.test_mode
+        value=st.session_state.get("test_mode", False),
+        key="chk_test_mode"
     )
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -817,7 +963,7 @@ else:
     if menu_actif == "📋 Saisie d'Audit terrain":
         
         # Étape 1 : Proposition de départ de l'audit (AVEC MASTER CARD BOUTON 3D COMBINÉ)
-        if not st.session_state.audit_started:
+        if not st.session_state.get("audit_started", False):
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
             # Les deux textes fusionnés dans un bouton-carte géant de niveau Prestige avec la fusée rotative intégrée par CSS
             btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.user_zone]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.user_zone]['sponsor']}"
@@ -878,101 +1024,78 @@ else:
                     
             # Étape 3 : Fin d'audit et écran de synthèse
             else:
-                if "audit_completed" not in st.session_state:
-                    st.session_state.audit_completed = False
-
-                if st.session_state.audit_completed:
-                    ok, msg = st.session_state.get("audit_result", (False, "Statut inconnu"))
-                    if ok:
-                        st.success(msg)
-                        st.balloons()
-                        st.markdown("""
-                        <div class="question-card" style="border-left-color: #10B981 !important;">
-                            <h3 style="color: #10B981 !important; margin-bottom: 10px;">🎉 Diagnostic synchronisé avec succès !</h3>
-                            <p style="color: #0F172A !important; font-size: 18px;">
-                                Vos réponses ont été envoyées et enregistrées directement dans votre fichier <b>Google Sheets</b>.
-                            </p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.error(msg)
-                        st.warning("⚠️ L'enregistrement en ligne dans Google Sheets a échoué. Regardez le message d'erreur rouge ci-dessus pour corriger le paramétrage de vos Secrets TOML.")
-
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                    if st.button("🚀 DÉMARRER UN NOUVEL AUDIT", use_container_width=True):
+                st.success("🎉 Évaluation terminée !")
+                st.subheader("Synthèse de l'évaluation")
+                
+                # Calculs des scores
+                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
+                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
+                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                t_app = 15 - t_na
+                
+                score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
+                
+                # Score d'affichage (Métriques 3D flottantes)
+                col_s1, col_s2 = st.columns(2)
+                with col_s1:
+                    st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
+                with col_s2:
+                    st.metric("Taux de Conformité Final", f"{score_final_pct} %")
+                
+                st.markdown("### 📝 Observations terrain")
+                obs = st.text_area("Remarques / Anomalies constatées :")
+                act = st.text_area("Plan d'action corrective :")
+                
+                # Récapitulatif
+                with st.expander("🔎 Afficher le récapitulatif détaillé"):
+                    for c in CRITERES_OFFICIELS:
+                        rep = st.session_state.answers.get(c["id"], "N/A")
+                        bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
+                        st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
+                
+                # Actions de validation finales (Le bouton d'enregistrement hérite du style prestige 3D)
+                st.markdown("<br>", unsafe_allow_html=True)
+                col_end1, col_end2 = st.columns(2)
+                with col_end1:
+                    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                    if st.button("❌ Réinitialiser l'audit", use_container_width=True):
                         st.session_state.audit_started = False
-                        st.session_state.audit_completed = False
                         st.session_state.current_q_idx = 0
                         st.session_state.answers = {}
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
-
-                else:
-                    st.success("🎉 Évaluation terminée !")
-                    st.subheader("Synthèse de l'évaluation")
-                    
-                    # Calculs des scores
-                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                    t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                    t_app = 15 - t_na
-                    
-                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                    
-                    # Score d'affichage (Métriques 3D flottantes)
-                    col_s1, col_s2 = st.columns(2)
-                    with col_s1:
-                        st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
-                    with col_s2:
-                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                    
-                    st.markdown("### 📝 Observations terrain")
-                    obs = st.text_area("Remarques / Anomalies constatées :")
-                    act = st.text_area("Plan d'action corrective :")
-                    
-                    # Récapitulatif
-                    with st.expander("🔎 Afficher le récapitulatif détaillé"):
-                        for c in CRITERES_OFFICIELS:
-                            rep = st.session_state.answers.get(c["id"], "N/A")
-                            bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
-                            st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
-                    
-                    # Actions de validation finales
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_end1, col_end2 = st.columns(2)
-                    with col_end1:
-                        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                        if st.button("❌ Réinitialiser l'audit", use_container_width=True):
-                            st.session_state.audit_started = False
-                            st.session_state.audit_completed = False
-                            st.session_state.current_q_idx = 0
-                            st.session_state.answers = {}
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    with col_end2:
-                        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                        if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                            sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
-                            
-                            row_data = {
-                                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                "Zone": st.session_state.user_zone,
-                                "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
-                                "Auditeur": st.session_state.user_name,
-                                "Role": st.session_state.user_role,
-                                "Score_Total": t_oui,
-                                "Pourcentage": score_final_pct,
-                                "Observations": obs,
-                                "Actions_Correctives": act
-                            }
-                            row_data.update(sc_num)
-                            
-                            ok, msg = sauvegarder_audit(row_data)
-                            st.session_state.audit_result = (ok, msg)
-                            st.session_state.audit_completed = True
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
+                with col_end2:
+                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                    if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
+                        # Enregistrement
+                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
+                        
+                        row_data = {
+                            "Date": datetime.now().strftime("%Y-%m-%d"),
+                            "Zone": st.session_state.user_zone,
+                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
+                            "Auditeur": st.session_state.user_name,
+                            "Role": st.session_state.user_role,
+                            "Score_Total": t_oui,
+                            "Pourcentage": score_final_pct,
+                            "Observations": obs,
+                            "Actions_Correctives": act
+                        }
+                        row_data.update(sc_num)
+                        
+                        synced_gsheets = sauvegarder_audit_local(row_data)
+                        
+                        if synced_gsheets:
+                            st.success("✅ Enregistrement effectué avec succès dans Google Sheets et synchronisé en temps réel !")
+                        else:
+                            st.success(f"✅ Enregistrement effectué avec succès dans le fichier {SHARED_DATA_FILE} !")
+                        st.balloons()
+                        
+                        st.session_state.audit_started = False
+                        st.session_state.current_q_idx = 0
+                        st.session_state.answers = {}
+                        st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
     # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE (KPIs 3D)
     elif menu_actif == "📊 Analyse & Historique":
