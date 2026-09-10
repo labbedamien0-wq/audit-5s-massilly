@@ -11,26 +11,17 @@ except ImportError:
     HAS_GSHEETS = False
 
 def get_gsheets_connection():
-    if not HAS_GSHEETS:
-        return None, "La bibliothèque 'st-gsheets-connection' n'est pas installée."
-    try:
-        if "connections" not in st.secrets or "gsheets" not in st.secrets["connections"]:
-            return None, "Les secrets [connections.gsheets] sont introuvables dans Streamlit Cloud (Settings > Secrets)."
-        
-        # Nettoyage automatique des \\n dans la clé privée
+    if HAS_GSHEETS:
         try:
-            sec_dict = dict(st.secrets["connections"]["gsheets"])
-            if "private_key" in sec_dict:
-                pk_val = str(sec_dict["private_key"])
-                if "\\n" in pk_val:
-                    st.secrets["connections"]["gsheets"]["private_key"] = pk_val.replace("\\n", "\n")
-        except Exception:
-            pass
-
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        return conn, None
-    except Exception as e:
-        return None, f"Erreur d'initialisation de la connexion Google Sheets : {str(e)}"
+            if "connections" in st.secrets and "gsheets" in st.secrets["connections"]:
+                pk = st.secrets["connections"]["gsheets"].get("private_key", "")
+                if "\\n" in pk:
+                    st.secrets["connections"]["gsheets"]["private_key"] = pk.replace("\\n", "\n")
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            return conn, ""
+        except Exception as e:
+            return None, str(e)
+    return None, "La bibliothèque 'streamlit-gsheets' n'est pas installée."
 
 def charger_audits():
     conn, _ = get_gsheets_connection()
@@ -50,12 +41,9 @@ def charger_audits():
 
 def sauvegarder_audit_local(data_dict):
     gsheets_ok = False
-    err_msg = None
-    
+    err_msg = ""
     conn, conn_err = get_gsheets_connection()
-    if conn is None:
-        err_msg = conn_err
-    else:
+    if conn is not None:
         try:
             try:
                 existing_df = conn.read(ttl=0)
@@ -75,7 +63,9 @@ def sauvegarder_audit_local(data_dict):
             conn.update(data=updated_df)
             gsheets_ok = True
         except Exception as e:
-            err_msg = f"Erreur lors de l'écriture dans Google Sheets : {str(e)}"
+            err_msg = str(e)
+    else:
+        err_msg = conn_err if conn_err else "Connexion Google Sheets non configurée dans Secrets."
 
     # Backup local CSV
     try:
@@ -92,7 +82,7 @@ def sauvegarder_audit_local(data_dict):
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "TEST - Diagnostic" if st.session_state.get("test_mode", False) else "Diagnostic Réel",
         "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)",
-        "gsheets": "OK" if gsheets_ok else f"ÉCHEC ({err_msg})"
+        "gsheets": "OK" if gsheets_ok else f"OFFLINE ({err_msg})"
     }
     try:
         with open(SHARED_LOG_FILE, 'r', encoding='utf-8') as f:
@@ -100,12 +90,16 @@ def sauvegarder_audit_local(data_dict):
     except Exception:
         logs = []
     logs.append(log_entry)
-    with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(logs, f, ensure_ascii=False, indent=4)
+    try:
+        with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(logs, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
 
     return gsheets_ok, err_msg
 
 
+# ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY RAL 5017
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;700;800&family=Playfair+Display:ital,wght=0,600;0,800;1,600&display=swap');
@@ -709,29 +703,13 @@ st.markdown("""
 # Affichage permanent du titre principal extrudé et flottant 3D
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
 
-# AFFICHAGE DU RÉSULTAT DU DERNIER ENREGISTREMENT (PANNEAU DE CONFIRMATION / DIAGNOSTIC)
-if "last_save_result" in st.session_state and st.session_state["last_save_result"] is not None:
-    res = st.session_state["last_save_result"]
-    if res.get("synced", False):
-        st.success(f"🎉 DIAGNOSTIC ENREGISTRÉ AVEC SUCCÈS DANS GOOGLE SHEETS ! (Zone : {res.get('zone')}, Auditeur : {res.get('auditeur')})")
-        st.balloons()
-    else:
-        st.warning(f"⚠️ DIAGNOSTIC ENREGISTRÉ LOCALEMENT SUR LE SERVEUR CLOUD (Zone : {res.get('zone')})")
-        st.error(f"❌ La synchronisation Google Sheets a échoué. Cause exacte :\n\n**{res.get('err_msg')}**")
-        st.info("💡 **Conseil :** Assurez-vous d'avoir partagé votre fichier Google Sheet en rôle **Éditeur** avec l'adresse e-mail : `bot-audit-5s@audit-5s-massilly.iam.gserviceaccount.com`.")
-    
-    if st.button("✖️ Fermer cette notification", key="btn_close_notif"):
-        st.session_state["last_save_result"] = None
-        st.rerun()
-
-
 # Affichage du badge de Test si actif
-if st.session_state.test_mode:
+if st.session_state.get('test_mode', False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
 # ========================================== EFFET CINÉMATIQUE PORTE DOUBLE (WAHOU ENTRÉE)
-if st.session_state.user_authenticated and not st.session_state.portal_shown:
+if st.session_state.get('user_authenticated', False) and not st.session_state.get('portal_shown', False):
     st.markdown("""
     <div class="portal-container">
         <!-- PORTAL DOOR LEFT -->
@@ -756,7 +734,7 @@ if st.session_state.user_authenticated and not st.session_state.portal_shown:
 
 
 # ========================================== ÉCRAN 1 : CONNEXION ET CRÉATION DE PROFIL
-if not st.session_state.user_authenticated:
+if not st.session_state.get('user_authenticated', False):
     # Grosse plaque 3D "PORTAIL D'IDENTIFICATION" (Remplace la ligne blanche inutile et s'affiche plus gros)
     st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
     
@@ -800,24 +778,11 @@ if not st.session_state.user_authenticated:
     
     # Choix du Mode Test
     st.markdown("---")
-    st.markdown("### Configuration & Test de la connexion Cloud")
-    col_t1, col_t2 = st.columns([2, 1])
-    with col_t1:
-        st.session_state.test_mode = st.checkbox(
-            "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
-            value=st.session_state.get("test_mode", False)
-        )
-    with col_t2:
-        if st.button("🔌 TESTER GOOGLE SHEETS", use_container_width=True, key="btn_test_gsheets_conn"):
-            conn, conn_err = get_gsheets_connection()
-            if conn is not None:
-                try:
-                    df_test = conn.read(ttl=0)
-                    st.success(f"✅ Connexion Google Sheets réussie ! ({len(df_test) if df_test is not None else 0} lignes trouvées)")
-                except Exception as ex_t:
-                    st.error(f"❌ Erreur lors de la lecture du Google Sheet : {str(ex_t)}")
-            else:
-                st.error(f"❌ Connexion impossible : {conn_err}")
+    st.markdown("### Configuration de la base de données")
+    st.session_state.test_mode = st.checkbox(
+        "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
+        value=st.session_state.get('test_mode', False)
+    )
     
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
@@ -839,7 +804,7 @@ else:
     col_u1, col_u2 = st.columns([4, 1])
     with col_u1:
         st.markdown(
-            f"👤 **{st.session_state.user_name}** ({st.session_state.user_role}) | Zone active : **{ZONES_MASSILLY[st.session_state.user_zone]['label']}**"
+            f"👤 **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')}) | Zone active : **{ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['label']}**"
         )
     with col_u2:
         st.markdown("<div class='small-btn-container'>", unsafe_allow_html=True)
@@ -864,10 +829,10 @@ else:
     if menu_actif == "📋 Saisie d'Audit terrain":
         
         # Étape 1 : Proposition de départ de l'audit (AVEC MASTER CARD BOUTON 3D COMBINÉ)
-        if not st.session_state.audit_started:
+        if not st.session_state.get('audit_started', False):
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
             # Les deux textes fusionnés dans un bouton-carte géant de niveau Prestige avec la fusée rotative intégrée par CSS
-            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.user_zone]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.user_zone]['sponsor']}"
+            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['sponsor']}"
             if st.button(btn_label, use_container_width=True):
                 st.session_state.audit_started = True
                 st.session_state.current_q_idx = 0
@@ -877,7 +842,7 @@ else:
             
         # Étape 2 : Déroulement de l'audit critère par critère
         else:
-            idx = st.session_state.current_q_idx
+            idx = st.session_state.get('current_q_idx', 0)
             
             if idx < 15:
                 crit = CRITERES_OFFICIELS[idx]
@@ -923,81 +888,92 @@ else:
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-            # Étape 3 : Fin d'audit et écran de synthèse
+            # Étape 3 : Fin d'audit et écran de synthèse / confirmation
             else:
-                st.success("🎉 Évaluation terminée !")
-                st.subheader("Synthèse de l'évaluation")
-                
-                # Calculs des scores
-                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                t_app = 15 - t_na
-                
-                score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                
-                # Score d'affichage (Métriques 3D flottantes)
-                col_s1, col_s2 = st.columns(2)
-                with col_s1:
-                    st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
-                with col_s2:
-                    st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                
-                st.markdown("### 📝 Observations terrain")
-                obs = st.text_area("Remarques / Anomalies constatées :")
-                act = st.text_area("Plan d'action corrective :")
-                
-                # Récapitulatif
-                with st.expander("🔎 Afficher le récapitulatif détaillé"):
-                    for c in CRITERES_OFFICIELS:
-                        rep = st.session_state.answers.get(c["id"], "N/A")
-                        bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
-                        st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
-                
-                # Actions de validation finales (Le bouton d'enregistrement hérite du style prestige 3D)
-                st.markdown("<br>", unsafe_allow_html=True)
-                col_end1, col_end2 = st.columns(2)
-                with col_end1:
-                    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                    if st.button("❌ Réinitialiser l'audit", use_container_width=True):
-                        st.session_state.audit_started = False
-                        st.session_state.current_q_idx = 0
-                        st.session_state.answers = {}
-                        st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                with col_end2:
+                if st.session_state.get("audit_submitted", False):
+                    st.balloons()
+                    if st.session_state.get("last_sync_status", False):
+                        st.success("🎉 DIAGNOSTIC ENREGISTRÉ ET SYNCHRONISÉ EN TEMPS RÉEL DANS GOOGLE SHEETS !")
+                        st.info(" Les données de votre audit ont été ajoutées directement dans votre feuille de calcul partagée.")
+                    else:
+                        st.warning("⚠️ DIAGNOSTIC ENREGISTRÉ EN MÉMOIRE LOCALE (Connexion Google Sheets indisponible)")
+                        err_det = st.session_state.get("last_sync_error", "")
+                        if err_det:
+                            st.error(f"📋 Détail technique renvoyé par Google : {err_det}")
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                    if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                        # Enregistrement
-                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
-                        
-                        row_data = {
-                            "Date": datetime.now().strftime("%Y-%m-%d"),
-                            "Zone": st.session_state.user_zone,
-                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
-                            "Auditeur": st.session_state.user_name,
-                            "Role": st.session_state.user_role,
-                            "Score_Total": t_oui,
-                            "Pourcentage": score_final_pct,
-                            "Observations": obs,
-                            "Actions_Correctives": act
-                        }
-                        row_data.update(sc_num)
-                        
-                        synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
-                        
-                        st.session_state["last_save_result"] = {
-                            "synced": synced_gsheets,
-                            "err_msg": err_msg,
-                            "zone": st.session_state.user_zone,
-                            "auditeur": st.session_state.user_name
-                        }
-                        
-                        st.session_state.audit_started = False
-                        st.session_state.current_q_idx = 0
-                        st.session_state.answers = {}
+                    if st.button("🚀 COMMENCER UN NOUVEL AUDIT 5S", use_container_width=True):
+                        st.session_state["audit_submitted"] = False
+                        st.session_state["audit_started"] = False
+                        st.session_state["current_q_idx"] = 0
+                        st.session_state["answers"] = {}
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
+                else:
+                    st.success("🎉 Évaluation terminée !")
+                    st.subheader("Synthèse de l'évaluation")
+                    
+                    answers_dict = st.session_state.get("answers", {})
+                    t_oui = sum(1 for v in answers_dict.values() if v == "OUI")
+                    t_non = sum(1 for v in answers_dict.values() if v == "NON")
+                    t_na = sum(1 for v in answers_dict.values() if v == "N/A")
+                    t_app = 15 - t_na
+                    
+                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
+                    
+                    col_s1, col_s2 = st.columns(2)
+                    with col_s1:
+                        st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
+                    with col_s2:
+                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
+                    
+                    st.markdown("### 📝 Observations terrain")
+                    obs = st.text_area("Remarques / Anomalies constatées :")
+                    act = st.text_area("Plan d'action corrective :")
+                    
+                    with st.expander("🔎 Afficher le récapitulatif détaillé"):
+                        for c in CRITERES_OFFICIELS:
+                            rep = answers_dict.get(c["id"], "N/A")
+                            bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
+                            st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_end1, col_end2 = st.columns(2)
+                    with col_end1:
+                        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                        if st.button("❌ Réinitialiser l'audit", use_container_width=True):
+                            st.session_state["audit_started"] = False
+                            st.session_state["current_q_idx"] = 0
+                            st.session_state["answers"] = {}
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
+                    with col_end2:
+                        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                        if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
+                            sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in answers_dict.items()}
+                            
+                            active_zone = st.session_state.get("user_zone", "Zone 1")
+                            row_data = {
+                                "Date": datetime.now().strftime("%Y-%m-%d"),
+                                "Zone": active_zone,
+                                "Sponsor": ZONES_MASSILLY[active_zone]["sponsor"],
+                                "Auditeur": st.session_state.get("user_name", ""),
+                                "Role": st.session_state.get("user_role", ""),
+                                "Score_Total": t_oui,
+                                "Pourcentage": score_final_pct,
+                                "Observations": obs,
+                                "Actions_Correctives": act
+                            }
+                            row_data.update(sc_num)
+                            
+                            synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
+                            
+                            st.session_state["audit_submitted"] = True
+                            st.session_state["last_sync_status"] = synced_gsheets
+                            st.session_state["last_sync_error"] = err_msg
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
 
     # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE (KPIs 3D)
     elif menu_actif == "📊 Analyse & Historique":
