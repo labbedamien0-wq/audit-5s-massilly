@@ -506,7 +506,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Affichage permanent du titre principal
-st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
+# Top header removed per user request
 
 if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
@@ -600,117 +600,89 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-    # ÉTAPE 2 : CHOIX DU NOM (PRÉNOM SEUL / PRÉNOM N.)
+        # ÉTAPE 2 : CHOIX DU NOM (BADGES DE COULEURS DEFILANTS)
     elif auth_step == 2:
-        st.markdown("<div class='user-id-badge-3d'>👤 SÉLECTION DU NOM</div>", unsafe_allow_html=True)
+        st.markdown("<div class='user-id-badge-3d'>👤 SÉLECTION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur votre prénom pour continuer :</p>", unsafe_allow_html=True)
         
-        PERSONNES_MASSILLY_RAW = [
-            {"prenom": "Damien", "nom": "Labbé", "full": "Damien Labbé"},
-            {"prenom": "Audrey", "nom": "Sordet", "full": "Audrey Sordet"},
-            {"prenom": "Anthony", "nom": "Duplessis", "full": "Anthony Duplessis"},
-            {"prenom": "Jonathan", "nom": "Mele", "full": "Jonathan Mele"},
-            {"prenom": "Thomas", "nom": "Collin", "full": "Thomas Collin"},
-            {"prenom": "Gaspard", "nom": "Sommereux", "full": "Gaspard Sommereux"},
-            {"prenom": "Mariia", "nom": "Leliukh", "full": "Mariia Leliukh"},
-            {"prenom": "Céline", "nom": "Hereng", "full": "Céline Hereng"},
-            {"prenom": "Dimitri", "nom": "Dupasquier", "full": "Dimitri Dupasquier"},
-            {"prenom": "Frédéric", "nom": "Bouvy", "full": "Frédéric Bouvy"},
-            {"prenom": "Nathalie", "nom": "Berthelin", "full": "Nathalie Berthelin"}
+        PERSONNES_BADGES = [
+            {"prenom": "Damien", "nom": "Labbé", "full": "Damien Labbé", "icon": "⚡", "sub": "Alternant Méthodes 5S", "cls": "p-color-0"},
+            {"prenom": "Audrey", "nom": "Sordet", "full": "Audrey Sordet", "icon": "🎯", "sub": "Sponsor Zone 1", "cls": "p-color-1"},
+            {"prenom": "Anthony", "nom": "Duplessis", "full": "Anthony Duplessis", "icon": "📦", "sub": "Sponsor Zone 2", "cls": "p-color-2"},
+            {"prenom": "Jonathan", "nom": "Mele", "full": "Jonathan Mele", "icon": "🚚", "sub": "Sponsor Zone 3", "cls": "p-color-3"},
+            {"prenom": "Thomas", "nom": "Collin", "full": "Thomas Collin", "icon": "📋", "sub": "Sponsor Zone 4", "cls": "p-color-4"},
+            {"prenom": "Gaspard", "nom": "Sommereux", "full": "Gaspard Sommereux", "icon": "🥫", "sub": "Sponsor Zone 5", "cls": "p-color-5"},
+            {"prenom": "Mariia", "nom": "Leliukh", "full": "Mariia Leliukh", "icon": "🏭", "sub": "Sponsor Zone 6", "cls": "p-color-6"},
+            {"prenom": "Céline", "nom": "Hereng", "full": "Céline Hereng", "icon": "📑", "sub": "Sponsor Zone 7", "cls": "p-color-7"},
+            {"prenom": "Dimitri", "nom": "Dupasquier", "full": "Dimitri Dupasquier", "icon": "⚙️", "sub": "Sponsor Zone 8", "cls": "p-color-8"},
+            {"prenom": "Frédéric", "nom": "Bouvy", "full": "Frédéric Bouvy", "icon": "🔧", "sub": "Sponsor Zone 9", "cls": "p-color-9"},
+            {"prenom": "Nathalie", "nom": "Berthelin", "full": "Nathalie Berthelin", "icon": "🛡️", "sub": "Sponsor Zone 10", "cls": "p-color-10"}
         ]
         
-        counts_prenom = {}
-        for p in PERSONNES_MASSILLY_RAW:
-            counts_prenom[p["prenom"]] = counts_prenom.get(p["prenom"], 0) + 1
-            
-        options_map = {}
-        options_liste = []
-        for p in PERSONNES_MASSILLY_RAW:
-            if counts_prenom[p["prenom"]] > 1:
-                disp = f"{p['prenom']} {p['nom'][0]}."
-            else:
-                disp = p["prenom"]
-            options_map[disp] = p["full"]
-            options_liste.append(disp)
-            
-        options_liste.append("Autre (Saisie manuelle)...")
-        
-        nom_select = st.selectbox("Sélectionnez votre Prénom :", options_liste)
-        if nom_select == "Autre (Saisie manuelle)...":
-            nom_complet = st.text_input("Saisissez votre Prénom et Nom :")
-        else:
-            nom_complet = options_map.get(nom_select, nom_select)
-            
-        col_n1, col_n2 = st.columns(2)
-        with col_n1:
-            st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-            if st.button("⬅️ Retour au choix du rôle", use_container_width=True):
-                st.session_state.auth_step = 1
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-        with col_n2:
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("CONTINUER VERS LE CHOIX DE ZONE ➡️", use_container_width=True):
-                if not nom_complet.strip():
-                    st.error("Veuillez renseigner votre nom.")
-                else:
-                    st.session_state.user_name = nom_complet
+        # Grille 2 colonnes tactile de badges colorés
+        col_p1, col_p2 = st.columns(2)
+        for idx, p in enumerate(PERSONNES_BADGES):
+            target_col = col_p1 if idx % 2 == 0 else col_p2
+            with target_col:
+                st.markdown(f"<div class='person-badge-wrap {p['cls']}'>", unsafe_allow_html=True)
+                lbl = f"{p['icon']}  {p['prenom']}  •  {p['sub']}"
+                if st.button(lbl, key=f"p_badge_{idx}", use_container_width=True):
+                    st.session_state.user_name = p['full']
                     st.session_state.auth_step = 3
                     st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour au choix du rôle", use_container_width=True):
+            st.session_state.auth_step = 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
             
-    # ÉTAPE 3 : SÉLECTION DE LA ZONE & CONFIGURATION
+    # ÉTAPE 3 : SÉLECTION DE LA ZONE (BADGES DE COULEURS DEFILANTS)
     elif auth_step == 3:
-        st.markdown("<div class='user-id-badge-3d'>📍 ZONE LOGISTIQUE CIBLÉE</div>", unsafe_allow_html=True)
-        st.info(f"Profil configuré : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
+        st.markdown("<div class='user-id-badge-3d'>📍 SÉLECTION DE LA ZONE LOGISTIQUE</div>", unsafe_allow_html=True)
+        st.info(f"Profil actif : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
+        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur une zone pour LANCER LE DIAGNOSTIC :</p>", unsafe_allow_html=True)
         
-        liste_zones = list(ZONES_MASSILLY.keys())
-        zone_select = st.selectbox(
-            "Zone logistique ciblée :",
-            liste_zones,
-            format_func=lambda x: ZONES_MASSILLY[x]["label"]
-        )
+        ZONES_BADGES = [
+            {"key": "Zone 1", "label": "Zone 1 - Filmeuse & quais prod", "sponsor": "Audrey Sordet", "icon": "🎞️", "cls": "z-color-0"},
+            {"key": "Zone 2", "label": "Zone 2 - Bureaux expédition", "sponsor": "Anthony Duplessis", "icon": "🖥️", "cls": "z-color-1"},
+            {"key": "Zone 3", "label": "Zone 3 - Quai chargement", "sponsor": "Jonathan Mele", "icon": "🚛", "cls": "z-color-2"},
+            {"key": "Zone 4", "label": "Zone 4 - Prépa commandes", "sponsor": "Thomas Collin", "icon": "📋", "cls": "z-color-3"},
+            {"key": "Zone 5", "label": "Zone 5 - Emplacements boîtes", "sponsor": "Gaspard Sommereux", "icon": "🥫", "cls": "z-color-4"},
+            {"key": "Zone 6", "label": "Zone 6 - Palettier", "sponsor": "Mariia Leliukh", "icon": "🏗️", "cls": "z-color-5"},
+            {"key": "Zone 7", "label": "Zone 7 - Réception MP & bureaux", "sponsor": "Céline Hereng", "icon": "📦", "cls": "z-color-6"},
+            {"key": "Zone 8", "label": "Zone 8 - Stockage métal", "sponsor": "Dimitri Dupasquier", "icon": "⚙️", "cls": "z-color-7"},
+            {"key": "Zone 9", "label": "Zone 9 - Local joint", "sponsor": "Frédéric Bouvy", "icon": "🧪", "cls": "z-color-8"},
+            {"key": "Zone 10", "label": "Zone 10 - Produits dangereux", "sponsor": "Nathalie Berthelin", "icon": "☣️", "cls": "z-color-9"}
+        ]
         
-        st.markdown("---")
-        st.markdown("### Configuration & Test GSheets")
         st.session_state.test_mode = st.checkbox(
             "🧪 Activer le MODE TEST d'entraînement",
             value=st.session_state.get("test_mode", False)
         )
         
-        if st.button("🔌 TESTER CONNEXION GOOGLE SHEETS", use_container_width=True):
-            ok, err = sauvegarder_audit_local({
-                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "Zone": "TEST_CONNEXION",
-                "Sponsor": "SYSTEM",
-                "Auditeur": st.session_state.get('user_name', 'TEST'),
-                "Role": st.session_state.get('user_role', 'TEST'),
-                "Score_Total": 15,
-                "Pourcentage": 100,
-                "Observations": "Test automatique de connexion depuis l'écran d'accueil",
-                "Actions_Correctives": "Aucune"
-            })
-            if ok:
-                st.success("✅ Connexion Google Sheets fonctionnelle ! L'audit de test a été enregistré.")
-            else:
-                st.error(f"❌ Échec de connexion : {err}")
+        col_z1, col_z2 = st.columns(2)
+        for idx, z in enumerate(ZONES_BADGES):
+            target_col = col_z1 if idx % 2 == 0 else col_z2
+            with target_col:
+                st.markdown(f"<div class='zone-badge-wrap {z['cls']}'>", unsafe_allow_html=True)
+                lbl = f"{z['icon']}  {z['key']}  •  {z['sponsor']}\n{z['label']}"
+                if st.button(lbl, key=f"z_badge_{idx}", use_container_width=True):
+                    st.session_state.user_zone = z["key"]
+                    st.session_state.user_authenticated = True
+                    st.session_state.auth_step = 0
+                    st.session_state.portal_shown = False
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
                 
         st.markdown("<br>", unsafe_allow_html=True)
-        col_z1, col_z2 = st.columns(2)
-        with col_z1:
-            st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-            if st.button("⬅️ Retour au choix du nom", use_container_width=True):
-                st.session_state.auth_step = 2
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-        with col_z2:
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("🔓 COMMENCER LE DIAGNOSTIC DE ZONE", use_container_width=True):
-                st.session_state.user_zone = zone_select
-                st.session_state.user_authenticated = True
-                st.session_state.auth_step = 0
-                st.session_state.portal_shown = False
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour à la sélection de l'utilisateur", use_container_width=True):
+            st.session_state.auth_step = 2
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================== APPLICATION PRINCIPALE (UTILISATEUR CONNECTÉ)
 else:
@@ -855,6 +827,28 @@ else:
     # ========================================== ONGLET 2 : HISTORIQUE & STATISTIQUES
     elif menu_actif == "📊 Analyse & Historique":
         st.markdown("### 📊 Historique des Audits 5S Logistique")
+        
+        # Section Outils Admin / Test Connexion Google Sheets
+        if st.session_state.get("user_role") == "Éditeur (Méthodes / Alternant)":
+            with st.expand_container() if hasattr(st, 'expand_container') else st.expander("🛠️ OUTILS ADMINISTRATEUR & CONNEXION GOOGLE SHEETS"):
+                st.markdown("#### Diagnostic de liaison Google Sheets")
+                if st.button("🔌 TESTER LA CONNEXION GOOGLE SHEETS", use_container_width=True):
+                    ok, err = sauvegarder_audit_local({
+                        "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "Zone": "TEST_CONNEXION",
+                        "Sponsor": "SYSTEM",
+                        "Auditeur": st.session_state.get('user_name', 'TEST_ADMIN'),
+                        "Role": st.session_state.get('user_role', 'ADMIN'),
+                        "Score_Total": 15,
+                        "Pourcentage": 100,
+                        "Observations": "Test de connexion manuel depuis le panneau Administrateur",
+                        "Actions_Correctives": "Aucune"
+                    })
+                    if ok:
+                        st.success("✅ Connexion Google Sheets fonctionnelle ! L'audit de test a été enregistré.")
+                    else:
+                        st.error(f"❌ Échec de connexion : {err}")
+        
         df_hist = charger_audits()
         if not df_hist.empty:
             st.dataframe(df_hist, use_container_width=True)
