@@ -2,13 +2,20 @@ import streamlit as st
 import pandas as pd
 import json
 import os
+import textwrap
 from datetime import datetime
 
+# Import flexible support pour streamlit-gsheets OU st-gsheets-connection
+HAS_GSHEETS = False
 try:
     from streamlit_gsheets import GSheetsConnection
     HAS_GSHEETS = True
 except ImportError:
-    HAS_GSHEETS = False
+    try:
+        from st_gsheets_connection import GSheetsConnection
+        HAS_GSHEETS = True
+    except ImportError:
+        HAS_GSHEETS = False
 
 def get_gsheets_connection():
     if HAS_GSHEETS:
@@ -20,7 +27,7 @@ def get_gsheets_connection():
 
 # Configuration de la page
 st.set_page_config(
-    page_title="Massilly - Audit 5S Mobile v51",
+    page_title="Massilly - Audit 5S Mobile",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -42,89 +49,24 @@ ZONES_MASSILLY = {
 
 # Les 15 critères d'audit officiels de Massilly
 CRITERES_OFFICIELS = [
-    # Seiri (Trier)
-    {
-        "id": "c1",
-        "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."
-    },
-    {
-        "id": "c2",
-        "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."
-    },
-    {
-        "id": "c3",
-        "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."
-    },
-    # Seiton (Ranger)
-    {
-        "id": "c4",
-        "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."
-    },
-    {
-        "id": "c5",
-        "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."
-    },
-    {
-        "id": "c6",
-        "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."
-    },
-    # Seiso (Nettoyer)
-    {
-        "id": "c7",
-        "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."
-    },
-    {
-        "id": "c8",
-        "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."
-    },
-    {
-        "id": "c9",
-        "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."
-    },
-    # Seiketsu (Standardiser)
-    {
-        "id": "c10",
-        "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."
-    },
-    {
-        "id": "c11",
-        "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."
-    },
-    {
-        "id": "c12",
-        "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."
-    },
-    # Shitsuke (Maintenir)
-    {
-        "id": "c13",
-        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
-        "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."
-    },
-    {
-        "id": "c14",
-        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
-        "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."
-    },
-    {
-        "id": "c15",
-        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
-        "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."
-    }
+    {"id": "c1", "cat": "1. Sort (Seiri) - Trier", "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."},
+    {"id": "c2", "cat": "1. Sort (Seiri) - Trier", "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."},
+    {"id": "c3", "cat": "1. Sort (Seiri) - Trier", "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."},
+    {"id": "c4", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."},
+    {"id": "c5", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."},
+    {"id": "c6", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."},
+    {"id": "c7", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."},
+    {"id": "c8", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."},
+    {"id": "c9", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."},
+    {"id": "c10", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."},
+    {"id": "c11", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."},
+    {"id": "c12", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."},
+    {"id": "c13", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."},
+    {"id": "c14", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."},
+    {"id": "c15", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."}
 ]
 
-# Initialisation robuste de la session
+# Initialisation de la session
 st.session_state.setdefault("user_authenticated", False)
 st.session_state.setdefault("user_role", "")
 st.session_state.setdefault("user_name", "")
@@ -134,9 +76,9 @@ st.session_state.setdefault("current_q_idx", 0)
 st.session_state.setdefault("answers", {})
 st.session_state.setdefault("test_mode", False)
 st.session_state.setdefault("portal_shown", False)
-st.session_state.setdefault("auth_step", 0) # 0 = Page Bienvenue
+st.session_state.setdefault("auth_step", 0)
+st.session_state.setdefault("opening_anim", False)
 
-# Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.get("test_mode", False):
     SHARED_DATA_FILE = "test_suivi_audits_5s.csv"
     SHARED_LOG_FILE = "test_journal_activite_5s.json"
@@ -144,7 +86,6 @@ else:
     SHARED_DATA_FILE = "suivi_audits_5s.csv"
     SHARED_LOG_FILE = "journal_activite_5s.json"
 
-# Création automatique des fichiers s'ils n'existent pas
 if not os.path.exists(SHARED_DATA_FILE):
     colonnes_init = [
         "Date", "Zone", "Sponsor", "Auditeur", "Role",
@@ -199,7 +140,6 @@ def sauvegarder_audit_local(data_dict):
         except Exception as e:
             err_details = str(e)
 
-    # Backup local CSV
     try:
         df = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
     except Exception:
@@ -209,7 +149,6 @@ def sauvegarder_audit_local(data_dict):
     df = pd.concat([df, new_row], ignore_index=True)
     df.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
 
-    # Journal JSON
     log_entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "TEST - Diagnostic" if st.session_state.get("test_mode", False) else "Diagnostic Réel",
@@ -228,8 +167,8 @@ def sauvegarder_audit_local(data_dict):
     return gsheets_ok, err_details
 
 
-# ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY
-st.markdown("""
+# CSS GLOBAL ULTRA-SÉCURISÉ & DEDENTED (AUCUNE DÉCORRECTION D'INDENTATION POUR ÉVITER LES BLOCS DE CODE TEXTE)
+css_code = textwrap.dedent("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;700;800&family=Playfair+Display:ital,wght=0,600;0,800;1,600&display=swap');
 
@@ -280,8 +219,6 @@ st.markdown("""
             0 12px 18px rgba(0,0,0,0.6) !important;
         animation: floatHeader 3.8s ease-in-out infinite alternate !important;
         transform: perspective(800px) rotateX(15deg);
-        cursor: pointer;
-        transition: all 0.3s ease !important;
     }
     
     @keyframes floatHeader {
@@ -296,11 +233,11 @@ st.markdown("""
         border-radius: 20px !important;
         color: #FFFFFF !important;
         text-align: center;
-        padding: 22px 35px !important;
-        font-size: 1.75rem !important;
+        padding: 20px 40px !important;
+        font-size: 1.7rem !important;
         font-weight: 900 !important;
-        letter-spacing: 4px;
-        margin: 20px auto 30px auto !important;
+        letter-spacing: 5px;
+        margin: 15px auto 30px auto !important;
         max-width: 820px;
         box-shadow: 
             0 15px 35px rgba(56, 189, 248, 0.4),
@@ -316,120 +253,151 @@ st.markdown("""
         100% { transform: perspective(800px) rotateX(10deg) translateY(-8px) scale(1.01); }
     }
 
-    /* --- SYMBOLES ANIMÉS FLOTTANTS MASSILLY (PAGE BIENVENUE) --- */
-    .floating-symbols-field {
+    /* --- LA BOÎTE DÉCORÉE MASSILLY 3D INTERACTIVE --- */
+    .box-scene-container {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 460px;
+        height: 320px;
+        margin: 25px auto;
+        position: relative;
+    }
+
+    .massilly-box-3d {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateX(16deg) rotateY(-8deg);
+        transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Animation d'ouverture WHAOU avec plongeon de caméra */
+    .massilly-box-3d.opening-active {
+        animation: boxWhaouOpen 1.5s cubic-bezier(0.7, 0, 0.25, 1) forwards !important;
+    }
+
+    @keyframes boxWhaouOpen {
+        0% {
+            transform: rotateX(16deg) rotateY(-8deg) scale(1);
+        }
+        40% {
+            transform: rotateX(25deg) rotateY(0deg) scale(1.15) translateY(20px);
+        }
+        100% {
+            transform: rotateX(75deg) rotateY(0deg) scale(3.8) translateY(120px);
+            opacity: 0.1;
+        }
+    }
+
+    /* Intérieur doré étincelant de la boîte */
+    .box-interior-glow {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        background: radial-gradient(circle, #F59E0B 0%, #D97706 40%, #000000 100%);
+        border-radius: 20px;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+        box-shadow: 0 0 80px rgba(245, 158, 11, 0.9), inset 0 0 50px rgba(255, 255, 255, 0.8);
+    }
+
+    .massilly-box-3d.opening-active .box-interior-glow {
+        opacity: 1 !important;
+    }
+
+    /* Corps métallique de la boîte */
+    .box-body-metal {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0A1E3F 0%, #0E529E 50%, #062850 100%) !important;
+        border: 4px solid #F59E0B !important;
+        border-radius: 24px !important;
+        box-shadow: 
+            0 25px 60px rgba(0, 0, 0, 0.8),
+            inset 0 0 35px rgba(56, 189, 248, 0.4),
+            0 0 35px rgba(245, 158, 11, 0.3) !important;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        gap: 30px;
-        margin: 35px 0;
+        justify-content: center;
         padding: 20px;
-        background: rgba(15, 23, 42, 0.6);
-        border-radius: 24px;
-        border: 2px dashed #38BDF8;
-        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+        border-bottom: 12px solid #D97706 !important;
     }
 
-    .floating-symbols-field span {
-        font-size: 4rem;
-        display: inline-block;
-        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-        transition: transform 0.3s;
+    /* Couvercle articulé */
+    .box-lid-metal {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(145deg, #0E529E 0%, #1E293B 60%, #0B1329 100%) !important;
+        border: 4px solid #F59E0B !important;
+        border-radius: 24px !important;
+        transform-origin: top center;
+        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        backface-visibility: hidden;
     }
 
-    .sym-fly-1 { animation: flyOrbit1 4s ease-in-out infinite alternate; }
-    .sym-fly-2 { animation: flyOrbit2 3.5s ease-in-out infinite alternate; }
-    .sym-fly-3 { animation: flyOrbit3 4.2s ease-in-out infinite alternate; }
-    .sym-fly-4 { animation: flyOrbit1 3.8s ease-in-out infinite alternate; }
-    .sym-fly-5 { animation: flyOrbit2 4.5s ease-in-out infinite alternate; }
-
-    @keyframes flyOrbit1 {
-        0% { transform: translateY(0px) rotate(0deg) scale(1); }
-        100% { transform: translateY(-18px) rotate(12deg) scale(1.15); }
-    }
-    @keyframes flyOrbit2 {
-        0% { transform: translateY(-10px) rotate(-8deg) scale(1.05); }
-        100% { transform: translateY(10px) rotate(10deg) scale(0.95); }
-    }
-    @keyframes flyOrbit3 {
-        0% { transform: translateY(5px) rotate(5deg) scale(0.98); }
-        100% { transform: translateY(-22px) rotate(-15deg) scale(1.2); }
+    .massilly-box-3d.opening-active .box-lid-metal {
+        transform: rotateX(-125deg) translateY(-20px) !important;
     }
 
-    /* --- MENUS DÉROULANTS XXL TACTILES SMARTPHONE --- */
+    /* Latch / Serrure or */
+    .box-latch-gold {
+        position: absolute;
+        bottom: 15px;
+        width: 50px;
+        height: 22px;
+        background: linear-gradient(135deg, #F59E0B, #FBBF24, #D97706);
+        border-radius: 6px;
+        border: 2px solid #FFFFFF;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 900;
+        color: #000;
+    }
+
+    /* --- SELECTBOX XXL SMARTPHONE TACTILE --- */
     div[data-testid="stSelectbox"] > div {
-        min-height: 82px !important;
-        background-color: rgba(15, 23, 42, 0.95) !important;
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
         border: 3px solid #38BDF8 !important;
         border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3) !important;
-        display: flex !important;
-        align-items: center !important;
+        min-height: 82px !important;
+        padding: 10px 18px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.2) !important;
+    }
+
+    div[data-testid="stSelectbox"] [data-baseweb="select"] {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
     }
 
     div[data-testid="stSelectbox"] label {
-        font-size: 1.4rem !important;
+        font-size: 22px !important;
         font-weight: 800 !important;
         color: #38BDF8 !important;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 12px !important;
+        letter-spacing: 1px !important;
+        margin-bottom: 8px !important;
     }
 
-    div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
-        color: #FFFFFF !important;
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-    }
-
-    /* Option list items in selectbox dropdown */
-    ul[data-baseweb="menu"] li {
-        min-height: 70px !important;
-        font-size: 1.4rem !important;
-        font-weight: 700 !important;
-        display: flex !important;
-        align-items: center !important;
-        padding-left: 20px !important;
-        border-bottom: 1px solid #334155 !important;
-    }
-
-    /* --- BOUTONS DE NAVIGATION & ACTION 3D PRESTIGE --- */
-    .stButton > button,
-    div[data-testid="stButton"] button {
-        background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
-        background-size: 200% auto !important;
-        color: #FFFFFF !important;
-        height: 85px !important;
-        font-size: 24px !important;
-        font-weight: 900 !important;
-        border-radius: 20px !important;
-        border: none !important;
-        border-bottom: 10px solid #063970 !important;
-        box-shadow: 
-            0 15px 30px rgba(14, 82, 158, 0.45),
-            0 0 20px rgba(56, 189, 248, 0.3) !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        letter-spacing: 2px;
-        transition: all 0.2s ease !important;
-    }
-
-    .stButton > button:hover,
-    div[data-testid="stButton"] button:hover {
-        filter: brightness(1.25) !important;
-        transform: translateY(-6px) !important;
-        box-shadow: 0 22px 40px rgba(56, 189, 248, 0.7) !important;
-    }
-
-    .stButton > button:active,
-    div[data-testid="stButton"] button:active {
-        transform: translateY(4px) !important;
-        border-bottom: 2px solid #063970 !important;
-    }
-
-    /* --- BOUTONS DE VOTE (OUI / NON / N/A) --- */
+    /* --- BOUTONS VOTE (OUI / NON / N/A) --- */
     div[data-testid="stHorizontalBlock"] button {
         width: 100% !important;
         height: 115px !important;
@@ -458,329 +426,114 @@ st.markdown("""
         box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
     }
 
-    /* --- BOUTON RETOUR --- */
-    .back-btn-container + .stButton button,
-    .back-btn-container + div.stButton button,
-    .back-btn-container button {
+    /* --- BOUTONS D'ACTION ET RETOUR --- */
+    .stButton > button, div[data-testid="stButton"] button {
+        background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
+        background-size: 200% auto !important;
+        color: #FFFFFF !important;
+        height: 85px !important;
+        font-size: 24px !important;
+        font-weight: 900 !important;
+        border-radius: 20px !important;
+        border: none !important;
+        border-bottom: 8px solid #063970 !important;
+        box-shadow: 0 12px 28px rgba(14, 82, 158, 0.45) !important;
+        letter-spacing: 2px;
+    }
+
+    .back-btn-container + .stButton button, .back-btn-container button {
         background: rgba(30, 41, 59, 0.8) !important;
         color: #94A3B8 !important;
         border: 2px solid #475569 !important;
         border-bottom: none !important;
-        height: 65px !important;
+        height: 60px !important;
         font-size: 18px !important;
-        font-weight: 700 !important;
-        border-radius: 14px !important;
-        box-shadow: none !important;
     }
-
-    .small-btn-container + .stButton button,
-    .small-btn-container + div.stButton button,
-    .small-btn-container button {
-        height: 50px !important;
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        border-radius: 10px !important;
-        border-bottom: 3px solid #0B1329 !important;
-        background: #1E293B !important;
-    }
-
-    /* --- ANIMATION PARTICULES & EXPLOSION MASSILLY 3D --- */
-    .explosion-canvas {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 999999 !important;
-        pointer-events: none !important;
-    }
-
-    .massilly-products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 16px;
-        margin: 25px auto;
-        max-width: 1100px;
-    }
-
-    .product-badge-3d {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)) !important;
-        border: 2px solid #38BDF8 !important;
-        border-radius: 18px !important;
-        padding: 18px 15px !important;
-        text-align: center !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.15) !important;
-        transform: perspective(800px) rotateX(8deg);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    }
-
-    .product-badge-3d:hover {
-        transform: perspective(800px) rotateX(0deg) translateY(-8px) scale(1.04) !important;
-        border-color: #60A5FA !important;
-        box-shadow: 0 18px 35px rgba(56, 189, 248, 0.4), inset 0 0 20px rgba(56, 189, 248, 0.3) !important;
-    }
-
-    .product-badge-icon {
-        font-size: 3.2rem !important;
-        display: block !important;
-        margin-bottom: 8px !important;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)) !important;
-    }
-
-    .product-badge-title {
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        margin-bottom: 4px !important;
-    }
-
-    .product-badge-sub {
-        font-size: 0.85rem !important;
-        color: #94A3B8 !important;
-        font-weight: 600 !important;
-        line-height: 1.3 !important;
-    }
-
-    .logo-5s-3d-floating {
-        background: linear-gradient(135deg, rgba(14, 82, 158, 0.3), rgba(15, 23, 42, 0.9)) !important;
-        border: 3px solid #38BDF8 !important;
-        border-radius: 24px !important;
-        padding: 25px 20px !important;
-        text-align: center !important;
-        margin: 20px auto !important;
-        max-width: 950px !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(56, 189, 248, 0.25) !important;
-        transform: perspective(1000px) rotateX(6deg);
-        animation: floatContainer 4s ease-in-out infinite alternate !important;
-    }
-
-    @keyframes floatContainer {
-        0% { transform: perspective(1000px) rotateX(6deg) translateY(0px); }
-        100% { transform: perspective(1000px) rotateX(6deg) translateY(-10px); }
-    }
-
-    .logo-5s-3d-text {
-        font-family: 'Playfair Display', serif !important;
-        font-size: 3.5rem !important;
-        font-weight: 900 !important;
-        background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #0E529E 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        text-shadow: 0 10px 20px rgba(56, 189, 248, 0.4) !important;
-        letter-spacing: 4px !important;
-    }
-    
-    /* --- LA BOÎTE DÉCORÉE MASSILLY 3D ET ANIMATION D'OUVERTURE CINÉMATIQUE --- */
-    .box-scene-3d {
-        perspective: 1000px;
-        width: 100%;
-        max-width: 480px;
-        margin: 20px auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .massilly-box-3d {
-        width: 320px;
-        height: 220px;
-        position: relative;
-        transform-style: preserve-3d;
-        transform: rotateX(18deg) rotateY(-12deg);
-        transition: transform 1.1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease;
-        cursor: pointer;
-    }
-
-    .massilly-box-3d:hover {
-        transform: rotateX(8deg) rotateY(0deg) scale(1.04);
-    }
-
-    .box-body {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #0A1E3F 0%, #0E529E 60%, #062850 100%) !important;
-        border: 4px solid #F59E0B !important; /* Dorure Or Massilly */
-        border-radius: 22px !important;
-        box-shadow: 
-            0 25px 60px rgba(0, 0, 0, 0.8),
-            inset 0 0 35px rgba(56, 189, 248, 0.4),
-            0 0 30px rgba(245, 158, 11, 0.3) !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 20px !important;
-        box-sizing: border-box;
-    }
-
-    .box-emblem {
-        font-size: 3.5rem !important;
-        filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.6)) !important;
-    }
-
-    .box-title {
-        font-family: 'Playfair Display', serif !important;
-        font-size: 1.5rem !important;
-        font-weight: 900 !important;
-        color: #FFFFFF !important;
-        letter-spacing: 3px !important;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
-    }
-
-    .box-subtitle {
-        font-size: 0.85rem !important;
-        font-weight: 800 !important;
-        color: #F59E0B !important;
-        letter-spacing: 3px !important;
-        margin-top: 4px !important;
-        text-transform: uppercase;
-    }
-
-    .box-lid {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #1E3A8A 0%, #0E529E 60%, #0F172A 100%) !important;
-        border: 5px solid #F59E0B !important;
-        border-radius: 22px !important;
-        transform-origin: top center;
-        transform-style: preserve-3d;
-        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 1.2s ease !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.7) !important;
-    }
-
-    .box-latch {
-        font-size: 1.4rem;
-        margin-top: 8px;
-        filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
-    }
-
-    .box-interior-glow {
-        position: absolute;
-        top: 5%;
-        left: 5%;
-        width: 90%;
-        height: 90%;
-        background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(56,189,248,0.8) 50%, rgba(14,82,158,0) 80%) !important;
-        opacity: 0;
-        transition: opacity 0.8s ease, transform 1.2s ease !important;
-        border-radius: 18px;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    /* ANIMATIONS D'OUVERTURE DE LA BOÎTE DÉCORÉE */
-    .massilly-box-3d.opening .box-lid {
-        transform: rotateX(-125deg) translateY(-15px) !important;
-        box-shadow: 0 -35px 90px rgba(245, 158, 11, 0.95) !important;
-    }
-
-    .massilly-box-3d.opening .box-interior-glow {
-        opacity: 1 !important;
-        transform: scale(1.6) !important;
-    }
-
-    .massilly-box-3d.zoom-inside {
-        transform: perspective(300px) translateZ(900px) scale(14) !important;
-        opacity: 0 !important;
-    }
-
 </style>
-""", unsafe_allow_html=True)
+""")
 
-# Affichage permanent du titre principal extrudé 3D
+st.markdown(css_code, unsafe_allow_html=True)
+
+# Affichage permanent du titre principal
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
 
 if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== ÉCRAN 1 : PARCOURS MULTI-ÉTAPES (ETAPES 0 à 3)
+# ========================================== PARCOURS MULTI-ÉTAPES (ETAPES 0 à 3)
 if not st.session_state.get("user_authenticated", False):
     auth_step = st.session_state.get("auth_step", 0)
     
-    # ÉTAPE 0 : PAGE D'OUVERTURE BIENVENUE CHEZ MASSILLY
+    # ÉTAPE 0 : BIENVENUE CHEZ MASSILLY & LA BOÎTE DÉCORÉE 3D WHAOU
     if auth_step == 0:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # En-tête de bienvenue épuré et prestigieux
-        st.markdown("""
-        <div style='text-align: center; margin-bottom: 15px;'>
+        header_html = textwrap.dedent("""
+        <div style='text-align: center; margin-bottom: 20px;'>
             <div style='font-size: 1.15rem; font-weight: 800; color: #38BDF8; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 6px;'>
-                GROUPE MASSILLY • FONDÉ EN 1911
+                GROUPE MASSILLY • DEPUIS 1911
             </div>
-            <h1 style='font-family: "Playfair Display", serif; font-size: 3.4rem; font-weight: 900; background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); text-transform: uppercase;'>
+            <h1 style='font-family: "Playfair Display", serif; font-size: 3.2rem; font-weight: 900; background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); text-transform: uppercase;'>
                 ✨ BIENVENUE CHEZ MASSILLY ✨
             </h1>
             <div style='font-size: 1.1rem; color: #94A3B8; font-weight: 700; letter-spacing: 2px;'>
                 PORTAIL D'EXCELLENCE OPÉRATIONNELLE ET LOGISTIQUE 5S
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
+        st.markdown(header_html, unsafe_allow_html=True)
 
-        # La Boîte Décorée Massilly 3D Interactive
-        st.markdown("""
-        <div class='box-scene-3d'>
-            <div id='massillyBox' class='massilly-box-3d' onclick='triggerBoxOpening()'>
-                <!-- Intérieur lumineux de la boîte -->
-                <div class='box-interior-glow' id='boxGlow'></div>
+        is_opening = st.session_state.get("opening_anim", False)
+        opening_class = "opening-active" if is_opening else ""
+
+        box_html = textwrap.dedent(f"""
+        <div class='box-scene-container'>
+            <div class='massilly-box-3d {opening_class}'>
+                <div class='box-interior-glow'></div>
                 
-                <!-- Corps de la boîte -->
-                <div class='box-body'>
-                    <div class='box-emblem'>🎁</div>
-                    <div class='box-title'>MASSILLY 1911</div>
-                    <div class='box-subtitle'>Boîte Décorée Premium</div>
+                <div class='box-body-metal'>
+                    <div style='font-size: 3rem;'>🎁</div>
+                    <div style='font-family: "Playfair Display", serif; font-size: 1.8rem; font-weight: 900; color: #FBBF24; letter-spacing: 3px; margin-top: 5px;'>
+                        MASSILLY 1911
+                    </div>
+                    <div style='font-size: 0.95rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px;'>
+                        EXCELLENCE OPÉRATIONNELLE
+                    </div>
                 </div>
                 
-                <!-- Couvercle articulé -->
-                <div class='box-lid' id='boxLid'>
-                    <div style='font-size: 3.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));'>⚙️</div>
-                    <div style='font-family: "Playfair Display", serif; font-size: 1.5rem; font-weight: 900; color: #FFFFFF; letter-spacing: 3px; text-shadow: 0 2px 6px rgba(0,0,0,0.8); margin-top: 5px;'>
+                <div class='box-lid-metal'>
+                    <div style='font-size: 3.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));'>⚙️</div>
+                    <div style='font-family: "Playfair Display", serif; font-size: 1.7rem; font-weight: 900; color: #FFFFFF; letter-spacing: 4px; margin-top: 6px;'>
                         MASSILLY
                     </div>
-                    <div style='font-size: 0.8rem; color: #F59E0B; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px;'>
+                    <div style='font-size: 0.85rem; color: #FBBF24; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px;'>
                         FABRIQUÉ EN FRANCE • 5S
                     </div>
-                    <div class='box-latch'>🔒</div>
+                    <div class='box-latch-gold'>🔒 1911</div>
                 </div>
             </div>
         </div>
-        
-        <script>
-            function triggerBoxOpening() {
-                const box = document.getElementById('massillyBox');
-                if (box) {
-                    box.classList.add('opening');
-                    setTimeout(() => {
-                        box.classList.add('zoom-inside');
-                    }, 350);
-                }
-            }
-        </script>
-        """, unsafe_allow_html=True)
+        """)
+        st.markdown(box_html, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🎁 OUVRIR LA BOÎTE & ENTRER DANS L'APPLICATION", use_container_width=True):
-            st.session_state.auth_step = 1
+        if st.button("🎁 ENTRER DANS L'APPLICATION", use_container_width=True):
+            st.session_state.opening_anim = True
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
+        if is_opening:
+            import time
+            st.session_state.opening_anim = False
+            st.session_state.auth_step = 1
+            st.rerun()
+
+    # ÉTAPE 1 : CHOIX DU RÔLE
     elif auth_step == 1:
         st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 25px;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
         
         col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
@@ -799,7 +552,7 @@ if not st.session_state.get("user_authenticated", False):
                 st.session_state.auth_step = 2
                 st.rerun()
                 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
         if st.button("⬅️ Retour à l'accueil", use_container_width=True):
             st.session_state.auth_step = 0
@@ -969,28 +722,27 @@ else:
                 st.progress(pct_prog / 100.0)
                 st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Étape {idx + 1} sur {total_q} ({pct_prog}%)</p>", unsafe_allow_html=True)
                 
-                st.markdown(f"""
+                card_html = textwrap.dedent(f"""
                 <div class='question-card'>
                     <div class='question-cat'>{crit['cat']}</div>
                     <div class='question-text'>{crit['txt']}</div>
                 </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 12px;'>Votre évaluation :</p>", unsafe_allow_html=True)
+                """)
+                st.markdown(card_html, unsafe_allow_html=True)
                 
                 col_b1, col_b2, col_b3 = st.columns(3)
                 with col_b1:
-                    if st.button("🟢 OUI", use_container_width=True, key=f"btn_oui_{idx}"):
+                    if st.button("🟢 OUI", key=f"btn_oui_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "OUI"
                         st.session_state.current_q_idx += 1
                         st.rerun()
                 with col_b2:
-                    if st.button("🔴 NON", use_container_width=True, key=f"btn_non_{idx}"):
+                    if st.button("🔴 NON", key=f"btn_non_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "NON"
                         st.session_state.current_q_idx += 1
                         st.rerun()
                 with col_b3:
-                    if st.button("🔵 N/A", use_container_width=True, key=f"btn_na_{idx}"):
+                    if st.button("🔵 N/A", key=f"btn_na_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "N/A"
                         st.session_state.current_q_idx += 1
                         st.rerun()
@@ -998,59 +750,58 @@ else:
                 st.markdown("<br>", unsafe_allow_html=True)
                 if idx > 0:
                     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                    if st.button("⬅️ Critère précédent", use_container_width=True):
+                    if st.button("⬅️ Question précédente", use_container_width=True):
                         st.session_state.current_q_idx -= 1
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
             else:
-                st.markdown("<div class='user-id-badge-3d'>🎉 DIAGNOSTIC COMPLÉTÉ – RÉCAPITULATIF</div>", unsafe_allow_html=True)
-                
+                st.markdown("## 🎯 Diagnostic terminé !")
                 t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
                 t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
                 t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                score_denom = t_oui + t_non
-                pct_score = int((t_oui / score_denom) * 100) if score_denom > 0 else 100
                 
-                m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Score Conforme", f"{t_oui}/15")
-                m2.metric("Non Conformités", f"{t_non}")
-                m3.metric("Non Applicables", f"{t_na}")
-                m4.metric("Taux de Conformité", f"{pct_score}%")
+                sc_total = t_oui
+                pct_final = int((sc_total / 15) * 100) if 15 > 0 else 0
                 
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("### 📝 Observations & Actions correctives terrain")
-                obs = st.text_area("Remarques / Anomales observées pendant le parcours :", placeholder="Saisissez ici les points d'amélioration...")
-                act = st.text_area("Actions correctives immédiates engagées :", placeholder="Saisissez les actions décidées...")
+                st.markdown(f"### Score Total : {sc_total} / 15 ({pct_final}%)")
+                
+                obs = st.text_area("Observations terrain / Anomalies constatées :", "")
+                act = st.text_area("Actions correctives immédiates proposées :", "")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
                 if st.button("💾 VALIDER ET ENREGISTRER L'AUDIT", use_container_width=True):
                     audit_data = {
                         "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "Zone": st.session_state.get('user_zone', 'Zone 1'),
-                        "Sponsor": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['sponsor'],
+                        "Zone": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]["label"],
+                        "Sponsor": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]["sponsor"],
                         "Auditeur": st.session_state.get('user_name', ''),
                         "Role": st.session_state.get('user_role', ''),
-                        "Score_Total": t_oui,
-                        "Pourcentage": pct_score,
+                        "Score_Total": sc_total,
+                        "Pourcentage": pct_final,
                         "Observations": obs,
                         "Actions_Correctives": act
                     }
                     for c in CRITERES_OFFICIELS:
-                        rep = st.session_state.answers.get(c["id"], "N/A")
-                        audit_data[c["id"]] = 1 if rep == "OUI" else (0 if rep == "NON" else "")
+                        audit_data[c["id"]] = st.session_state.answers.get(c["id"], "N/A")
                         
-                    ok_save, err_save = sauvegarder_audit_local(audit_data)
-                    st.session_state.audit_saved = True
-                    st.session_state.save_result_ok = ok_save
-                    st.session_state.save_result_err = err_save
+                    gs_ok, err_msg = sauvegarder_audit_local(audit_data)
+                    
+                    st.session_state.audit_started = False
+                    st.session_state.current_q_idx = 0
+                    st.session_state.answers = {}
+                    
+                    if gs_ok:
+                        st.success("✅ Audit enregistré avec succès dans Google Sheets et sur le serveur !")
+                    else:
+                        st.warning(f"⚠️ Audit enregistré en sauvegarde locale CSV. (Sync GSheets: {err_msg})")
                     st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
 
     # ========================================== ONGLET 2 : ANALYSE & HISTORIQUE
     elif menu_actif == "📊 Analyse & Historique":
-        st.markdown("### 📊 Suivi de la Performance 5S Logistique")
+        st.markdown("### Historique des audits enregistrés")
         df_hist = charger_audits()
         if df_hist is not None and not df_hist.empty:
             st.dataframe(df_hist, use_container_width=True)
@@ -1059,6 +810,6 @@ else:
 
     # ========================================== ONGLET 3 : RAPPEL DES STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
-        st.markdown("### 🗺️ Référentiel Officiel 5S Massilly Logistique")
-        for crit in CRITERES_OFFICIELS:
-            st.markdown(f"• **{crit['cat']}** : {crit['txt']}")
+        st.markdown("### Standards 5S Usine Massilly")
+        for z_key, z_val in ZONES_MASSILLY.items():
+            st.markdown(f"**{z_val['label']}** — Sponsor : *{z_val['sponsor']}*")
