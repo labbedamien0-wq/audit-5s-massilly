@@ -385,7 +385,10 @@ st.markdown("""
 
     
 
-    
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
+        background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
+        border-bottom: 8px solid #1E40AF !important;
+    }
 
     .back-btn-container + .stButton button, .back-btn-container button {
         background: rgba(30, 41, 59, 0.8) !important;
@@ -503,26 +506,8 @@ st.markdown("""
     }
 
     /* --- CARTE BLEU (GARÇONS) ET CARTE ROSE (FILLES) --- */
-    .boy-card button, div.boy-card button {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #38BDF8 100%) !important;
-        border: 2px solid #60A5FA !important;
-        border-bottom: 6px solid #1D4ED8 !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4) !important;
-    }
-    .girl-card button, div.girl-card button {
-        background: linear-gradient(135deg, #831843 0%, #DB2777 50%, #F472B6 100%) !important;
-        border: 2px solid #F472B6 !important;
-        border-bottom: 6px solid #9D174D !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(219, 39, 119, 0.4) !important;
-    }
+    
+    
 
     .logo-5s-3d-floating {
         background: linear-gradient(135deg, rgba(14, 82, 158, 0.35), rgba(15, 23, 42, 0.9)) !important;
@@ -553,56 +538,26 @@ st.markdown("""
 
     /* --- SPECIFICITÉ ÉLEVÉE : BLEU PUR POUR LES GARÇONS / ROSE MAGENTA PUR POUR LES FILLES --- */
     div.boy-card .stButton > button,
-    div.boy-card button,
-    .boy-card button {
-        background: linear-gradient(135deg, #0284C7 0%, #1E3A8A 100%) !important;
-        border: 3px solid #38BDF8 !important;
-        border-bottom: 6px solid #0369A1 !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.5) !important;
-        height: 70px !important;
-    }
+    div
     div.boy-card .stButton > button:hover,
-    div.boy-card button:hover {
-        transform: translateY(-4px) scale(1.02) !important;
-        box-shadow: 0 15px 35px rgba(56, 189, 248, 0.7) !important;
-        border-color: #7DD3FC !important;
-    }
+    div
 
     div.girl-card .stButton > button,
-    div.girl-card button,
-    .girl-card button {
-        background: linear-gradient(135deg, #EC4899 0%, #831843 100%) !important;
-        border: 3px solid #F472B6 !important;
-        border-bottom: 6px solid #9D174D !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(236, 72, 153, 0.5) !important;
-        height: 70px !important;
-    }
+    div
     div.girl-card .stButton > button:hover,
-    div.girl-card button:hover {
-        transform: translateY(-4px) scale(1.02) !important;
-        box-shadow: 0 15px 35px rgba(244, 114, 182, 0.7) !important;
-        border-color: #FBCFE8 !important;
-    }
+    div
 
     /* --- SPECTRE DE DÉGRADÉ CONTINU DE LA ZONE 1 À LA ZONE 10 (HAUTE SPÉCIFICITÉ) --- */
-    div.z-color-0 .stButton > button, div.z-color-0 button { background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important; border: 3px solid #38BDF8 !important; }
-    div.z-color-1 .stButton > button, div.z-color-1 button { background: linear-gradient(135deg, #0284C7 0%, #0D9488 100%) !important; border: 3px solid #2DD4BF !important; }
-    div.z-color-2 .stButton > button, div.z-color-2 button { background: linear-gradient(135deg, #0D9488 0%, #059669 100%) !important; border: 3px solid #34D399 !important; }
-    div.z-color-3 .stButton > button, div.z-color-3 button { background: linear-gradient(135deg, #059669 0%, #16A34A 100%) !important; border: 3px solid #4ADE80 !important; }
-    div.z-color-4 .stButton > button, div.z-color-4 button { background: linear-gradient(135deg, #16A34A 0%, #CA8A04 100%) !important; border: 3px solid #FACC15 !important; }
-    div.z-color-5 .stButton > button, div.z-color-5 button { background: linear-gradient(135deg, #CA8A04 0%, #EA580C 100%) !important; border: 3px solid #FB923C !important; }
-    div.z-color-6 .stButton > button, div.z-color-6 button { background: linear-gradient(135deg, #EA580C 0%, #E11D48 100%) !important; border: 3px solid #FB7185 !important; }
-    div.z-color-7 .stButton > button, div.z-color-7 button { background: linear-gradient(135deg, #E11D48 0%, #C026D3 100%) !important; border: 3px solid #E879F9 !important; }
-    div.z-color-8 .stButton > button, div.z-color-8 button { background: linear-gradient(135deg, #C026D3 0%, #9333EA 100%) !important; border: 3px solid #C084FC !important; }
-    div.z-color-9 .stButton > button, div.z-color-9 button { background: linear-gradient(135deg, #9333EA 0%, #4C1D95 100%) !important; border: 3px solid #A855F7 !important; }
+    div.z-color-0 .stButton > button, div
+    div.z-color-1 .stButton > button, div
+    div.z-color-2 .stButton > button, div
+    div.z-color-3 .stButton > button, div
+    div.z-color-4 .stButton > button, div
+    div.z-color-5 .stButton > button, div
+    div.z-color-6 .stButton > button, div
+    div.z-color-7 .stButton > button, div
+    div.z-color-8 .stButton > button, div
+    div.z-color-9 .stButton > button, div
 
     .zone-badge-wrap .stButton > button, .zone-badge-wrap button {
         height: 75px !important;
@@ -618,73 +573,152 @@ st.markdown("""
         box-shadow: 0 15px 35px rgba(255, 255, 255, 0.3) !important;
     }
 
-    /* --- BOUTONS DE VOTE D'AUDIT SPÉCIFIQUES --- */
-    .vote-btn-oui button, div.vote-btn-oui button {
-        background: linear-gradient(135deg, #10B981, #059669) !important;
-        border-bottom: 8px solid #047857 !important;
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3) !important;
-        color: #FFFFFF !important;
-        height: 110px !important;
-        font-size: 28px !important;
-        font-weight: 900 !important;
-        border-radius: 22px !important;
-    }
-    .vote-btn-non button, div.vote-btn-non button {
-        background: linear-gradient(135deg, #EF4444, #DC2626) !important;
-        border-bottom: 8px solid #B91C1C !important;
-        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3) !important;
-        color: #FFFFFF !important;
-        height: 110px !important;
-        font-size: 28px !important;
-        font-weight: 900 !important;
-        border-radius: 22px !important;
-    }
-    .vote-btn-na button, div.vote-btn-na button {
-        background: linear-gradient(135deg, #2563EB, #1D4ED8) !important;
-        border-bottom: 8px solid #1E40AF !important;
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3) !important;
-        color: #FFFFFF !important;
-        height: 110px !important;
-        font-size: 28px !important;
-        font-weight: 900 !important;
-        border-radius: 22px !important;
-    }
 
-    /* --- CARTES UTILISATEURS : GARÇONS (BLEU OCÉAN) vs FILLES (ROSE MAGENTA FLUO) --- */
-    .boy-card button, div.boy-card button {
-        background: linear-gradient(135deg, #0284C7 0%, #1D4ED8 50%, #0369A1 100%) !important;
+    /* --- BOUTONS UTILISATEURS GARÇONS (BLEU OCÉAN / CYAN) --- */
+    button[aria-label*="Damien"], div[data-testid="stButton"] button[aria-label*="Damien"],
+button[aria-label*="Anthony"], div[data-testid="stButton"] button[aria-label*="Anthony"],
+button[aria-label*="Jonathan"], div[data-testid="stButton"] button[aria-label*="Jonathan"],
+button[aria-label*="Thomas"], div[data-testid="stButton"] button[aria-label*="Thomas"],
+button[aria-label*="Gaspard"], div[data-testid="stButton"] button[aria-label*="Gaspard"],
+button[aria-label*="Dimitri"], div[data-testid="stButton"] button[aria-label*="Dimitri"],
+button[aria-label*="Frédéric"], div[data-testid="stButton"] button[aria-label*="Frédéric"] {
+        background: linear-gradient(135deg, #0284C7 0%, #1E3A8A 100%) !important;
         border: 3px solid #38BDF8 !important;
-        border-bottom: 8px solid #075985 !important;
+        border-bottom: 7px solid #0369A1 !important;
         color: #FFFFFF !important;
         font-size: 22px !important;
         font-weight: 900 !important;
         border-radius: 18px !important;
-        box-shadow: 0 12px 28px rgba(56, 189, 248, 0.45) !important;
-        height: 75px !important;
-    }
-    .girl-card button, div.girl-card button {
-        background: linear-gradient(135deg, #BE185D 0%, #E11D48 50%, #9D174D 100%) !important;
-        border: 3px solid #FB7185 !important;
-        border-bottom: 8px solid #881337 !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        border-radius: 18px !important;
-        box-shadow: 0 12px 28px rgba(225, 29, 72, 0.45) !important;
-        height: 75px !important;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.45) !important;
     }
 
-    /* --- CARTES ZONES 1 À 10 : SPECTRE DE DÉGRADÉ CONTINU --- */
-    .z-color-0 button, div.z-color-0 button { background: linear-gradient(135deg, #0284C7, #0369A1) !important; border-bottom: 7px solid #075985 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-1 button, div.z-color-1 button { background: linear-gradient(135deg, #0D9488, #0F766E) !important; border-bottom: 7px solid #115E59 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-2 button, div.z-color-2 button { background: linear-gradient(135deg, #059669, #047857) !important; border-bottom: 7px solid #065F46 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-3 button, div.z-color-3 button { background: linear-gradient(135deg, #65A30D, #4D7C0F) !important; border-bottom: 7px solid #3F6212 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-4 button, div.z-color-4 button { background: linear-gradient(135deg, #D97706, #B45309) !important; border-bottom: 7px solid #92400E !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-5 button, div.z-color-5 button { background: linear-gradient(135deg, #EA580C, #C2410C) !important; border-bottom: 7px solid #9A3412 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-6 button, div.z-color-6 button { background: linear-gradient(135deg, #E11D48, #BE123C) !important; border-bottom: 7px solid #9F1239 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-7 button, div.z-color-7 button { background: linear-gradient(135deg, #C026D3, #A21CAF) !important; border-bottom: 7px solid #86198F !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-8 button, div.z-color-8 button { background: linear-gradient(135deg, #9333EA, #7E22CE) !important; border-bottom: 7px solid #6B21A8 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
-    .z-color-9 button, div.z-color-9 button { background: linear-gradient(135deg, #4F46E5, #4338CA) !important; border-bottom: 7px solid #3730A3 !important; height: 75px !important; font-size: 22px !important; font-weight: 900 !important; border-radius: 18px !important; color: #FFF !important; }
+    /* --- BOUTONS UTILISATEURS FILLES (ROSE MAGENTA / PINK) --- */
+    button[aria-label*="Audrey"], div[data-testid="stButton"] button[aria-label*="Audrey"],
+button[aria-label*="Mariia"], div[data-testid="stButton"] button[aria-label*="Mariia"],
+button[aria-label*="Céline"], div[data-testid="stButton"] button[aria-label*="Céline"],
+button[aria-label*="Nathalie"], div[data-testid="stButton"] button[aria-label*="Nathalie"] {
+        background: linear-gradient(135deg, #9D174D 0%, #DB2777 50%, #F472B6 100%) !important;
+        border: 3px solid #F472B6 !important;
+        border-bottom: 7px solid #831843 !important;
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(219, 39, 119, 0.45) !important;
+    }
+
+    /* --- DEGRADES DES ZONES LOGISTIQUES 1 A 10 --- */
+    
+button[aria-label*="Zone 1"], div[data-testid="stButton"] button[aria-label*="Zone 1"] {
+    background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+    border: 3px solid #38BDF8 !important;
+    border-bottom: 7px solid #0369A1 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 2"], div[data-testid="stButton"] button[aria-label*="Zone 2"] {
+    background: linear-gradient(135deg, #0284C7 0%, #0D9488 100%) !important;
+    border: 3px solid #2DD4BF !important;
+    border-bottom: 7px solid #0D9488 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 3"], div[data-testid="stButton"] button[aria-label*="Zone 3"] {
+    background: linear-gradient(135deg, #0D9488 0%, #059669 100%) !important;
+    border: 3px solid #34D399 !important;
+    border-bottom: 7px solid #059669 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 4"], div[data-testid="stButton"] button[aria-label*="Zone 4"] {
+    background: linear-gradient(135deg, #059669 0%, #16A34A 100%) !important;
+    border: 3px solid #4ADE80 !important;
+    border-bottom: 7px solid #16A34A !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 5"], div[data-testid="stButton"] button[aria-label*="Zone 5"] {
+    background: linear-gradient(135deg, #16A34A 0%, #CA8A04 100%) !important;
+    border: 3px solid #FACC15 !important;
+    border-bottom: 7px solid #CA8A04 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 6"], div[data-testid="stButton"] button[aria-label*="Zone 6"] {
+    background: linear-gradient(135deg, #CA8A04 0%, #EA580C 100%) !important;
+    border: 3px solid #FB923C !important;
+    border-bottom: 7px solid #EA580C !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 7"], div[data-testid="stButton"] button[aria-label*="Zone 7"] {
+    background: linear-gradient(135deg, #EA580C 0%, #E11D48 100%) !important;
+    border: 3px solid #FB7185 !important;
+    border-bottom: 7px solid #E11D48 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 8"], div[data-testid="stButton"] button[aria-label*="Zone 8"] {
+    background: linear-gradient(135deg, #E11D48 0%, #C026D3 100%) !important;
+    border: 3px solid #E879F9 !important;
+    border-bottom: 7px solid #C026D3 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 9"], div[data-testid="stButton"] button[aria-label*="Zone 9"] {
+    background: linear-gradient(135deg, #C026D3 0%, #9333EA 100%) !important;
+    border: 3px solid #C084FC !important;
+    border-bottom: 7px solid #9333EA !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+button[aria-label*="Zone 10"], div[data-testid="stButton"] button[aria-label*="Zone 10"] {
+    background: linear-gradient(135deg, #9333EA 0%, #4C1D95 100%) !important;
+    border: 3px solid #A855F7 !important;
+    border-bottom: 7px solid #4C1D95 !important;
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
 
 </style>
 """, unsafe_allow_html=True)
@@ -969,26 +1003,20 @@ else:
                 
                 c_v1, c_v2, c_v3 = st.columns(3)
                 with c_v1:
-                    st.markdown("<div class='vote-btn-oui'>", unsafe_allow_html=True)
                     if st.button("🟢 OUI", use_container_width=True, key=f"btn_oui_{idx}"):
                         st.session_state.answers[crit["id"]] = "OUI"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
                 with c_v2:
-                    st.markdown("<div class='vote-btn-non'>", unsafe_allow_html=True)
                     if st.button("🔴 NON", use_container_width=True, key=f"btn_non_{idx}"):
                         st.session_state.answers[crit["id"]] = "NON"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
                 with c_v3:
-                    st.markdown("<div class='vote-btn-na'>", unsafe_allow_html=True)
                     if st.button("🔵 N/A", use_container_width=True, key=f"btn_na_{idx}"):
                         st.session_state.answers[crit["id"]] = "N/A"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
                         
                 st.markdown("<br>", unsafe_allow_html=True)
                 if idx > 0:
