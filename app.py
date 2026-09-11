@@ -20,7 +20,7 @@ def get_gsheets_connection():
 
 # Configuration de la page
 st.set_page_config(
-    page_title="Massilly - Audit 5S Mobile v15",
+    page_title="Massilly - Audit 5S Mobile v51",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -134,7 +134,7 @@ st.session_state.setdefault("current_q_idx", 0)
 st.session_state.setdefault("answers", {})
 st.session_state.setdefault("test_mode", False)
 st.session_state.setdefault("portal_shown", False)
-st.session_state.setdefault("auth_step", 0)
+st.session_state.setdefault("auth_step", 0) # 0 = Page Bienvenue
 
 # Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.get("test_mode", False):
@@ -296,11 +296,11 @@ st.markdown("""
         border-radius: 20px !important;
         color: #FFFFFF !important;
         text-align: center;
-        padding: 20px 40px !important;
-        font-size: 1.7rem !important;
+        padding: 22px 35px !important;
+        font-size: 1.75rem !important;
         font-weight: 900 !important;
-        letter-spacing: 5px;
-        margin: 25px auto 40px auto !important;
+        letter-spacing: 4px;
+        margin: 20px auto 30px auto !important;
         max-width: 820px;
         box-shadow: 
             0 15px 35px rgba(56, 189, 248, 0.4),
@@ -316,178 +316,91 @@ st.markdown("""
         100% { transform: perspective(800px) rotateX(10deg) translateY(-8px) scale(1.01); }
     }
 
-    /* --- SCÈNE D'ACCUEIL ANIMÉE ET SYMBOLES MASSILLY EN VOL --- */
-    .welcome-hero-container {
-        text-align: center;
-        padding: 40px 20px;
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(180deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
-        border: 3px solid #38BDF8;
-        border-radius: 28px;
-        box-shadow: 0 20px 50px rgba(56, 189, 248, 0.3);
-        margin-bottom: 35px;
-    }
-
-    .welcome-title-glow {
-        font-size: 2.8rem;
-        font-weight: 900;
-        background: linear-gradient(135deg, #FFFFFF, #38BDF8, #0E529E);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
-        letter-spacing: 3px;
-        margin-bottom: 25px;
-    }
-
+    /* --- SYMBOLES ANIMÉS FLOTTANTS MASSILLY (PAGE BIENVENUE) --- */
     .floating-symbols-field {
         display: flex;
-        justify-content: space-around;
+        justify-content: center;
         align-items: center;
+        gap: 30px;
         margin: 35px 0;
-        font-size: 3.8rem;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 24px;
+        border: 2px dashed #38BDF8;
+        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
     }
 
-    .sym-fly-1 { animation: floatOrbit1 4s ease-in-out infinite alternate; }
-    .sym-fly-2 { animation: floatOrbit2 5s ease-in-out infinite alternate; }
-    .sym-fly-3 { animation: floatOrbit3 3.5s ease-in-out infinite alternate; }
-    .sym-fly-4 { animation: floatOrbit1 4.5s ease-in-out infinite alternate; }
-    .sym-fly-5 { animation: floatOrbit2 3.8s ease-in-out infinite alternate; }
+    .floating-symbols-field span {
+        font-size: 4rem;
+        display: inline-block;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+        transition: transform 0.3s;
+    }
 
-    @keyframes floatOrbit1 {
+    .sym-fly-1 { animation: flyOrbit1 4s ease-in-out infinite alternate; }
+    .sym-fly-2 { animation: flyOrbit2 3.5s ease-in-out infinite alternate; }
+    .sym-fly-3 { animation: flyOrbit3 4.2s ease-in-out infinite alternate; }
+    .sym-fly-4 { animation: flyOrbit1 3.8s ease-in-out infinite alternate; }
+    .sym-fly-5 { animation: flyOrbit2 4.5s ease-in-out infinite alternate; }
+
+    @keyframes flyOrbit1 {
         0% { transform: translateY(0px) rotate(0deg) scale(1); }
         100% { transform: translateY(-18px) rotate(12deg) scale(1.15); }
     }
-    @keyframes floatOrbit2 {
-        0% { transform: translateY(0px) rotate(0deg) scale(1); }
-        100% { transform: translateY(20px) rotate(-15deg) scale(0.9); }
+    @keyframes flyOrbit2 {
+        0% { transform: translateY(-10px) rotate(-8deg) scale(1.05); }
+        100% { transform: translateY(10px) rotate(10deg) scale(0.95); }
     }
-    @keyframes floatOrbit3 {
-        0% { transform: translateY(0px) rotate(0deg) scale(1.05); }
-        100% { transform: translateY(-25px) rotate(8deg) scale(1.2); }
+    @keyframes flyOrbit3 {
+        0% { transform: translateY(5px) rotate(5deg) scale(0.98); }
+        100% { transform: translateY(-22px) rotate(-15deg) scale(1.2); }
     }
 
-    /* --- MENUS DÉROULANTS (SELECTBOX) XXL MULTI-TACTILE MOBILE --- */
+    /* --- MENUS DÉROULANTS XXL TACTILES SMARTPHONE --- */
     div[data-testid="stSelectbox"] > div {
         min-height: 82px !important;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)) !important;
+        background-color: rgba(15, 23, 42, 0.95) !important;
         border: 3px solid #38BDF8 !important;
         border-radius: 18px !important;
-        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25) !important;
+        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3) !important;
         display: flex !important;
         align-items: center !important;
-        padding: 8px 16px !important;
+    }
+
+    div[data-testid="stSelectbox"] label {
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+        color: #38BDF8 !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 12px !important;
     }
 
     div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
         color: #FFFFFF !important;
-        font-size: 24px !important;
+        font-size: 1.5rem !important;
         font-weight: 800 !important;
-        letter-spacing: 1px !important;
     }
 
-    div[data-testid="stSelectbox"] label {
-        font-size: 22px !important;
-        font-weight: 800 !important;
-        color: #38BDF8 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 2px !important;
-        margin-bottom: 12px !important;
-    }
-
-    div[data-baseweb="menu"] li {
-        min-height: 72px !important;
-        font-size: 22px !important;
+    /* Option list items in selectbox dropdown */
+    ul[data-baseweb="menu"] li {
+        min-height: 70px !important;
+        font-size: 1.4rem !important;
         font-weight: 700 !important;
-        padding: 18px 24px !important;
-    }
-
-    /* --- ONGLES DU MENU PRINCIPAL 3D --- */
-    div[data-testid="stRadio"] div[role="radiogroup"], 
-    div.row-widget.stRadio > div {
-        background: linear-gradient(180deg, #1E293B, #0F172A) !important;
-        border: 3px solid #334155 !important;
-        border-radius: 20px !important;
-        padding: 12px 16px !important;
-        gap: 16px !important;
         display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-around !important;
-        box-shadow: 
-            inset 0 4px 12px rgba(0, 0, 0, 0.6),
-            0 10px 20px rgba(0, 0, 0, 0.4) !important;
-        perspective: 1000px;
-        margin-bottom: 25px !important;
-    }
-
-    div[data-testid="stRadio"] div[role="radiogroup"] label, 
-    div.row-widget.stRadio label {
-        background: linear-gradient(135deg, #334155, #1E293B) !important;
-        color: #94A3B8 !important;
-        border: 2px solid #475569 !important;
-        border-bottom: 6px solid #0F172A !important; 
-        border-radius: 14px !important;
-        padding: 14px 28px !important;
-        font-size: 1.2rem !important;
-        font-weight: 800 !important;
-        cursor: pointer !important;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        text-align: center !important;
-        transform: translateY(-2px) rotateX(10deg);
-        display: inline-flex !important;
         align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
+        padding-left: 20px !important;
+        border-bottom: 1px solid #334155 !important;
     }
 
-    div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
-    div.row-widget.stRadio label:has(input:checked) {
-        background: linear-gradient(135deg, #0E529E 0%, #38BDF8 100%) !important;
-        color: #FFFFFF !important;
-        border-color: #38BDF8 !important;
-        border-bottom: 2px solid #063970 !important;
-        transform: translateY(4px) rotateX(0deg) scale(0.98) !important;
-        box-shadow: 
-            0 0 35px rgba(56, 189, 248, 0.85),
-            0 0 15px rgba(56, 189, 248, 0.4),
-            inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
-    }
-
-    /* --- CARTES DE CONTENU D'AUDIT 3D --- */
-    .question-card {
-        background-color: #FFFFFF !important;
-        border: 2px solid #E2E8F0 !important;
-        border-left: 8px solid #0E529E !important;
-        border-radius: 20px !important;
-        padding: 30px !important;
-        margin-bottom: 25px !important;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    .question-cat {
-        font-size: 1.2rem !important;
-        font-weight: 800 !important;
-        color: #0E529E !important;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 12px;
-    }
-
-    .question-text {
-        font-size: 1.65rem !important;
-        font-weight: 800 !important;
-        color: #0F172A !important;
-        line-height: 1.45;
-    }
-
-    /* --- STYLE GLOBAL DES BOUTONS DE L'APPLICATION --- */
+    /* --- BOUTONS DE NAVIGATION & ACTION 3D PRESTIGE --- */
     .stButton > button,
     div[data-testid="stButton"] button {
         background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
         background-size: 200% auto !important;
         color: #FFFFFF !important;
         height: 85px !important;
-        font-size: 26px !important;
+        font-size: 24px !important;
         font-weight: 900 !important;
         border-radius: 20px !important;
         border: none !important;
@@ -499,37 +412,21 @@ st.markdown("""
         cursor: pointer;
         position: relative;
         overflow: hidden;
-        letter-spacing: 3px;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        animation: pulseGlow 2s infinite alternate !important;
+        letter-spacing: 2px;
+        transition: all 0.2s ease !important;
     }
 
-    .stButton > button::before,
-    div[data-testid="stButton"] button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 40%;
-        height: 100%;
-        background: linear-gradient(
-            to right, 
-            rgba(255,255,255,0) 0%, 
-            rgba(255,255,255,0.6) 50%, 
-            rgba(255,255,255,0) 100%
-        );
-        transform: skewX(-25deg);
-        animation: shineSweep 2.2s infinite !important;
+    .stButton > button:hover,
+    div[data-testid="stButton"] button:hover {
+        filter: brightness(1.25) !important;
+        transform: translateY(-6px) !important;
+        box-shadow: 0 22px 40px rgba(56, 189, 248, 0.7) !important;
     }
 
-    @keyframes shineSweep {
-        0% { left: -120%; }
-        100% { left: 220%; }
-    }
-
-    @keyframes pulseGlow {
-        0% { box-shadow: 0 10px 20px rgba(14, 82, 158, 0.3), 0 0 10px rgba(56, 189, 248, 0.2); }
-        100% { box-shadow: 0 10px 40px rgba(56, 189, 248, 0.75), 0 0 25px rgba(56, 189, 248, 0.4); }
+    .stButton > button:active,
+    div[data-testid="stButton"] button:active {
+        transform: translateY(4px) !important;
+        border-bottom: 2px solid #063970 !important;
     }
 
     /* --- BOUTONS DE VOTE (OUI / NON / N/A) --- */
@@ -561,7 +458,7 @@ st.markdown("""
         box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
     }
 
-    /* --- BOUTONS RETOUR & PETITS BOUTONS --- */
+    /* --- BOUTON RETOUR --- */
     .back-btn-container + .stButton button,
     .back-btn-container + div.stButton button,
     .back-btn-container button {
@@ -569,10 +466,10 @@ st.markdown("""
         color: #94A3B8 !important;
         border: 2px solid #475569 !important;
         border-bottom: none !important;
-        height: 60px !important;
+        height: 65px !important;
         font-size: 18px !important;
         font-weight: 700 !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         box-shadow: none !important;
     }
 
@@ -596,32 +493,26 @@ if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== ÉCRAN 1 : CONNEXION MULTI-ÉTAPES (ETAPES 0 à 4)
+# ========================================== ÉCRAN 1 : PARCOURS MULTI-ÉTAPES (ETAPES 0 à 3)
 if not st.session_state.get("user_authenticated", False):
     auth_step = st.session_state.get("auth_step", 0)
     
-    # ÉTAPE 0 : PAGE DE BIENVENUE AVEC SYMBOLES MASSILLY ANIMÉS EN VOL
+    # ÉTAPE 0 : PAGE D'OUVERTURE BIENVENUE CHEZ MASSILLY
     if auth_step == 0:
+        st.markdown("<div class='user-id-badge-3d'>✨ BIENVENUE CHEZ MASSILLY ✨</div>", unsafe_allow_html=True)
+        
+        # Pluie de symboles Massilly en orbite 3D
         st.markdown("""
-        <div class='welcome-hero-container'>
-            <div class='welcome-title-glow'>✨ BIENVENUE CHEZ MASSILLY ✨</div>
-            <div style='font-size: 1.3rem; font-weight: 700; color: #E2E8F0; letter-spacing: 2px;'>
-                LEADER DE L'EMBALLAGE MÉTALLIQUE INDUSTRIEL
-            </div>
-            
-            <!-- SYMBOLES MASSILLY EN FLOTTAISON 3D -->
-            <div class='floating-symbols-field'>
-                <span class='sym-fly-1' title='Boîte Décorée'>🥫</span>
-                <span class='sym-fly-2' title='Boîte à Lait'>🥛</span>
-                <span class='sym-fly-3' title='Capsule EuroCap'>🍾</span>
-                <span class='sym-fly-4' title='Emballage Métallique'>📦</span>
-                <span class='sym-fly-5' title='Aérosol Haute Performance'>💈</span>
-                <span class='sym-fly-1' title='Capsule Couronne'>👑</span>
-            </div>
-
-            <div style='font-size: 1.15rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;'>
-                PORTAIL DE DIAGNOSTIC D'EXCELLENCE OPÉRATIONNELLE 5S
-            </div>
+        <div class='floating-symbols-field'>
+            <span class='sym-fly-1' title='Boîte Décorée'>🥫</span>
+            <span class='sym-fly-2' title='Boîte à Lait'>🥛</span>
+            <span class='sym-fly-3' title='Capsule EuroCap'>🍾</span>
+            <span class='sym-fly-4' title='Emballage Métallique'>📦</span>
+            <span class='sym-fly-5' title='Aérosol Haute Performance'>💈</span>
+            <span class='sym-fly-1' title='Capsule Couronne'>👑</span>
+        </div>
+        <div style='text-align: center; font-size: 1.25rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 25px;'>
+            PORTAIL DE DIAGNOSTIC D'EXCELLENCE OPÉRATIONNELLE 5S
         </div>
         """, unsafe_allow_html=True)
         
@@ -631,59 +522,37 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ÉTAPE 1 : ACCUEIL PRESTIGE AVEC BADGE CLIQUABLE
+    # ÉTAPE 1 : CHOIX DU RÔLE
     elif auth_step == 1:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
-        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🚀 CLIQUER ICI POUR VOUS IDENTIFIER", use_container_width=True):
-            st.session_state.auth_step = 2
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class='welcome-hero-container' style='margin-top: 25px;'>
-            <div style='font-size: 2.2rem; font-weight: 900; color: #38BDF8;'>✨ 5S ✨</div>
-            <div style='font-size: 1.3rem; font-weight: 800; color: #FFFFFF; letter-spacing: 4px; text-transform: uppercase; margin-top: 10px;'>
-                SEIRI • SEITON • SEISO • SEIKETSU • SHITSUKE
-            </div>
-            <div style='font-size: 1.05rem; color: #94A3B8; margin-top: 8px; font-weight: 600;'>
-                MÉTHODE D'EXCELLENCE OPÉRATIONNELLE LOGISTIQUE MASSILLY
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    # ÉTAPE 2 : CHOIX DU RÔLE
-    elif auth_step == 2:
         st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 25px;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
         
         col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
             if st.button("🎯 Sponsor de zone", use_container_width=True):
                 st.session_state.user_role = "Sponsor de zone"
-                st.session_state.auth_step = 3
+                st.session_state.auth_step = 2
                 st.rerun()
         with col_r2:
             if st.button("🔍 Référent 5S", use_container_width=True):
                 st.session_state.user_role = "Référent 5S"
-                st.session_state.auth_step = 3
+                st.session_state.auth_step = 2
                 st.rerun()
         with col_r3:
             if st.button("⚙️ Administrateur", use_container_width=True):
                 st.session_state.user_role = "Éditeur (Méthodes / Alternant)"
-                st.session_state.auth_step = 3
+                st.session_state.auth_step = 2
                 st.rerun()
                 
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
         if st.button("⬅️ Retour à l'accueil", use_container_width=True):
             st.session_state.auth_step = 0
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-    # ÉTAPE 3 : CHOIX DU NOM SELON LE RÔLE (ÉPURÉ PAR PRÉNOM SEUL / PRÉNOM N.)
-    elif auth_step == 3:
+    # ÉTAPE 2 : CHOIX DU NOM (PRÉNOM SEUL / PRÉNOM N.)
+    elif auth_step == 2:
         st.markdown("<div class='user-id-badge-3d'>👤 SÉLECTION DU NOM</div>", unsafe_allow_html=True)
         
         PERSONNES_MASSILLY_RAW = [
@@ -726,7 +595,7 @@ if not st.session_state.get("user_authenticated", False):
         with col_n1:
             st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
             if st.button("⬅️ Retour au choix du rôle", use_container_width=True):
-                st.session_state.auth_step = 2
+                st.session_state.auth_step = 1
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
         with col_n2:
@@ -736,12 +605,12 @@ if not st.session_state.get("user_authenticated", False):
                     st.error("Veuillez renseigner votre nom.")
                 else:
                     st.session_state.user_name = nom_complet
-                    st.session_state.auth_step = 4
+                    st.session_state.auth_step = 3
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
             
-    # ÉTAPE 4 : SÉLECTION DE LA ZONE & CONFIGURATION
-    elif auth_step == 4:
+    # ÉTAPE 3 : SÉLECTION DE LA ZONE & CONFIGURATION
+    elif auth_step == 3:
         st.markdown("<div class='user-id-badge-3d'>📍 ZONE LOGISTIQUE CIBLÉE</div>", unsafe_allow_html=True)
         st.info(f"Profil configuré : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
         
@@ -781,7 +650,7 @@ if not st.session_state.get("user_authenticated", False):
         with col_z1:
             st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
             if st.button("⬅️ Retour au choix du nom", use_container_width=True):
-                st.session_state.auth_step = 3
+                st.session_state.auth_step = 2
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
         with col_z2:
@@ -831,7 +700,6 @@ else:
                 st.session_state.audit_started = True
                 st.session_state.current_q_idx = 0
                 st.session_state.answers = {}
-                st.session_state.audit_saved = False
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
             
@@ -841,8 +709,10 @@ else:
             
             if idx < total_q:
                 crit = CRITERES_OFFICIELS[idx]
-                st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Critère {idx + 1} sur {total_q}</p>", unsafe_allow_html=True)
-                st.progress((idx + 1) / total_q)
+                pct_prog = int(((idx + 1) / total_q) * 100)
+                
+                st.progress(pct_prog / 100.0)
+                st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Étape {idx + 1} sur {total_q} ({pct_prog}%)</p>", unsafe_allow_html=True)
                 
                 st.markdown(f"""
                 <div class='question-card'>
@@ -851,115 +721,89 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-top: 15px;'>Évaluation terrain :</p>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 12px;'>Votre évaluation :</p>", unsafe_allow_html=True)
                 
-                col_btn1, col_btn2, col_btn3 = st.columns(3)
-                
-                with col_btn1:
-                    if st.button("🟢 OUI (Conforme)", key=f"btn_oui_{idx}", use_container_width=True):
+                col_b1, col_b2, col_b3 = st.columns(3)
+                with col_b1:
+                    if st.button("🟢 OUI", use_container_width=True, key=f"btn_oui_{idx}"):
                         st.session_state.answers[crit["id"]] = "OUI"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                        
-                with col_btn2:
-                    if st.button("🔴 NON (Écart)", key=f"btn_non_{idx}", use_container_width=True):
+                with col_b2:
+                    if st.button("🔴 NON", use_container_width=True, key=f"btn_non_{idx}"):
                         st.session_state.answers[crit["id"]] = "NON"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                        
-                with col_btn3:
-                    if st.button("🔵 N/A (Non applicable)", key=f"btn_na_{idx}", use_container_width=True):
+                with col_b3:
+                    if st.button("🔵 N/A", use_container_width=True, key=f"btn_na_{idx}"):
                         st.session_state.answers[crit["id"]] = "N/A"
                         st.session_state.current_q_idx += 1
                         st.rerun()
                         
+                st.markdown("<br>", unsafe_allow_html=True)
                 if idx > 0:
-                    st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                    if st.button("⬅️ Question précédente", use_container_width=True):
+                    if st.button("⬅️ Critère précédent", use_container_width=True):
                         st.session_state.current_q_idx -= 1
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
             else:
-                st.markdown("<div class='user-id-badge-3d'>📊 SYNTHÈSE DU DIAGNOSTIC 5S</div>", unsafe_allow_html=True)
+                st.markdown("<div class='user-id-badge-3d'>🎉 DIAGNOSTIC COMPLÉTÉ – RÉCAPITULATIF</div>", unsafe_allow_html=True)
                 
                 t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
                 t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
                 t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                score_denom = t_oui + t_non
+                pct_score = int((t_oui / score_denom) * 100) if score_denom > 0 else 100
                 
-                denom = t_oui + t_non
-                pct = round((t_oui / denom) * 100, 1) if denom > 0 else 0.0
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Score Conforme", f"{t_oui}/15")
+                m2.metric("Non Conformités", f"{t_non}")
+                m3.metric("Non Applicables", f"{t_na}")
+                m4.metric("Taux de Conformité", f"{pct_score}%")
                 
-                col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-                col_m1.metric("Score Conforme", f"{t_oui} / 15")
-                col_m2.metric("Écarts Détectés", f"{t_non}")
-                col_m3.metric("Non Applicable", f"{t_na}")
-                col_m4.metric("Taux de Conformité", f"{pct} %")
-                
-                st.markdown("---")
-                
-                st.markdown("### 📝 Observations terrain & Actions")
-                obs = st.text_area("Remarques / Anomales observées pendant la visite :", height=100)
-                actions = st.text_area("Actions correctives immédiates engagées ou recommandées :", height=100)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("### 📝 Observations & Actions correctives terrain")
+                obs = st.text_area("Remarques / Anomales observées pendant le parcours :", placeholder="Saisissez ici les points d'amélioration...")
+                act = st.text_area("Actions correctives immédiates engagées :", placeholder="Saisissez les actions décidées...")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                if st.button("💾 ENREGISTRER L'AUDIT SUR GOOGLE SHEETS", use_container_width=True):
-                    zone_cle = st.session_state.get('user_zone', 'Zone 1')
-                    data_save = {
+                if st.button("💾 VALIDER ET ENREGISTRER L'AUDIT", use_container_width=True):
+                    audit_data = {
                         "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "Zone": ZONES_MASSILLY[zone_cle]["label"],
-                        "Sponsor": ZONES_MASSILLY[zone_cle]["sponsor"],
-                        "Auditeur": st.session_state.get('user_name', 'Inconnu'),
-                        "Role": st.session_state.get('user_role', 'Auditeur'),
+                        "Zone": st.session_state.get('user_zone', 'Zone 1'),
+                        "Sponsor": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['sponsor'],
+                        "Auditeur": st.session_state.get('user_name', ''),
+                        "Role": st.session_state.get('user_role', ''),
                         "Score_Total": t_oui,
-                        "Pourcentage": pct,
+                        "Pourcentage": pct_score,
                         "Observations": obs,
-                        "Actions_Correctives": actions
+                        "Actions_Correctives": act
                     }
                     for c in CRITERES_OFFICIELS:
-                        data_save[c["id"]] = st.session_state.answers.get(c["id"], "N/A")
+                        rep = st.session_state.answers.get(c["id"], "N/A")
+                        audit_data[c["id"]] = 1 if rep == "OUI" else (0 if rep == "NON" else "")
                         
-                    ok, err = sauvegarder_audit_local(data_save)
+                    ok_save, err_save = sauvegarder_audit_local(audit_data)
                     st.session_state.audit_saved = True
-                    st.session_state.save_result_ok = ok
-                    st.session_state.save_result_err = err
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
-
-                if st.session_state.get("audit_saved", False):
-                    if st.session_state.get("save_result_ok", False):
-                        st.success("✅ Audit enregistré avec succès dans Google Sheets et dans la base locale !")
-                    else:
-                        st.warning("⚠️ Audit sauvegardé localement (Backup CSV). Connexion Google Sheets en attente.")
-                        
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                if st.button("🔄 NOUVEL AUDIT TERRAIN", use_container_width=True):
-                    st.session_state.audit_started = False
-                    st.session_state.current_q_idx = 0
-                    st.session_state.answers = {}
-                    st.session_state.audit_saved = False
+                    st.session_state.save_result_ok = ok_save
+                    st.session_state.save_result_err = err_save
                     st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
 
     # ========================================== ONGLET 2 : ANALYSE & HISTORIQUE
     elif menu_actif == "📊 Analyse & Historique":
-        st.markdown("### Historique des audits")
+        st.markdown("### 📊 Suivi de la Performance 5S Logistique")
         df_hist = charger_audits()
-        if not df_hist.empty:
+        if df_hist is not None and not df_hist.empty:
             st.dataframe(df_hist, use_container_width=True)
         else:
             st.info("Aucun audit enregistré pour le moment.")
 
     # ========================================== ONGLET 3 : RAPPEL DES STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
-        st.markdown("### Les 5 Piliers de la Méthode 5S chez Massilly")
-        st.markdown("""
-        - **1. Seiri (Trier)** : Éliminer l'inutile dans les allées et postes de travail.
-        - **2. Seiton (Ranger)** : Une place pour chaque outil, bac ou palette.
-        - **3. Seiso (Nettoyer)** : Inspection visuelle et propreté des zones.
-        - **4. Seiketsu (Standardiser)** : Règles claires et check-lists visuelles.
-        - **5. Shitsuke (Maintenir)** : Rigueur quotidienne et audits réguliers.
-        """)
+        st.markdown("### 🗺️ Référentiel Officiel 5S Massilly Logistique")
+        for crit in CRITERES_OFFICIELS:
+            st.markdown(f"• **{crit['cat']}** : {crit['txt']}")
