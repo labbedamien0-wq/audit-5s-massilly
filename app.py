@@ -50,96 +50,81 @@ CRITERES_OFFICIELS = [
     {
         "id": "c1",
         "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords).",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Inspecter les sols, abords, piliers et racks. Vérifier l'absence de palettes cassées, de films plastiques usagés, de résidus de cerclage, de pièces ou cartons obsolètes. Appliquer la règle des étiquettes rouges (Red Tag) : tout objet non utilisé depuis 3 mois doit être sorti de la zone."
+        "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."
     },
     {
         "id": "c2",
         "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Ouvrir les tiroirs des établis et servantes. Vérifier l'absence d'outillage en double, de consommables usagés ou de pièces hors d'usage. Conserver uniquement ce qui est strictement nécessaire au poste."
+        "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."
     },
     {
         "id": "c3",
         "cat": "1. Sort (Seiri) - Trier",
-        "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes).",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les allées de circulation des chariots et piétons doivent être parfaitement libres. Aucune palette, benne ou emballage ne doit déborder sur le marquage au sol des allées."
+        "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."
     },
     # Seiton (Ranger)
     {
         "id": "c4",
         "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Vérifier la présence du marquage au sol (bandes peintes ou adhésives). Les chariots, transpalettes, bennes à déchets et emplacements de palettes doivent être rangés exactement à leur place tracée."
+        "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."
     },
     {
         "id": "c5",
         "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les balais, pelles, rouleaux de film et étiquettes doivent être rangés sur leur panneau d'ombre (Shadow Board) ou emplacement étiqueté avec repérage visuel clair."
+        "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."
     },
     {
         "id": "c6",
         "cat": "2. Straighten (Seiton) - Ranger",
-        "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue).",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les lots métalliques, bobines ou palettes de capsules bloquées doivent porter la fiche d'identification bleue officielle et être stockés exclusivement dans la zone 'Produits Bloqués'."
+        "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."
     },
     # Seiso (Nettoyer)
     {
         "id": "c7",
         "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entrepôt sont propres et exempts de poussière, d'huile ou de saleté.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les sols doivent être balayés, sans poussière métallique, sans résidus d'huile ou de plastique. Les tables de préparation, convoyeurs et structures doivent être propres."
+        "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."
     },
     {
         "id": "c8",
         "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "Le matériel de nettoyage (balais, pelles, conteneurs, produits) est disponible, en bon état et rangé.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Balais, têtes de loup, produits dégraissants et laveuses doivent être propres, en bon état de fonctionnement et accessibles immédiatement dans leur point propre."
+        "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."
     },
     {
         "id": "c9",
         "cat": "3. Sweep (Seiso) - Nettoyer",
-        "txt": "Une inspection de nettoyage est effectuée pour identifier les fuites, les dommages, l'usure ou les anomalies de sécurité.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Nettoyer c'est inspecter ! Déceler d'éventuelles fuites d'huile sur les transpalettes/chariots, des montants de racks déformés, des ancrages desserrés ou des câbles électriques usés."
+        "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."
     },
     # Seiketsu (Standardiser)
     {
         "id": "c10",
         "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Les standards de rangement et d'étiquetage sont affichés, lisibles et respectés par l'ensemble de l'équipe.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les marquages au sol sont-ils nets et non effacés ? Les codes couleurs (allées, zones de stockage, déchets) sont-ils conformes aux standards visuels Massilly ?"
+        "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."
     },
     {
         "id": "c11",
         "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Les visuels (photos de référence du poste idéal / règles d'or 5S) sont présents et à jour dans la zone.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> La photo de référence 'Poste Idéal' ou le standard visuel 5S de la zone est-il affiché sur le panneau de communication et accessible à tous ?"
+        "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."
     },
     {
         "id": "c12",
         "cat": "4. Standardize (Seiketsu) - Standardiser",
-        "txt": "Les rôles et responsabilités pour le maintien du 5S sont clairement attribués (qui fait quoi, quand et comment).",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Le nom du responsable/sponsor de la zone est-il identifié ? Le planning des rituels quotidiens/hebdomadaires de nettoyage et rangement est-il affiché ?"
+        "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."
     },
     # Shitsuke (Maintenir)
     {
         "id": "c13",
-        "cat": "5. Sustain (Shitsuke) - Maintenir",
-        "txt": "Les rituels de 5-10 minutes en fin de poste pour nettoyer et ranger la zone sont systématiquement appliqués.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les opérateurs arrêtent-ils leur activité 5 à 10 minutes avant la fin de poste pour nettoyer leur zone et remettre les outils au standard ?"
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."
     },
     {
         "id": "c14",
-        "cat": "5. Sustain (Shitsuke) - Maintenir",
-        "txt": "Des audits 5S réguliers sont réalisés et le tableau de suivi affiché présente les résultats et actions.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Le tableau de communication de la zone affiche-t-il les derniers graphiques de score d'audit et le suivi du plan d'actions correctives ?"
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."
     },
     {
         "id": "c15",
-        "cat": "5. Sustain (Shitsuke) - Maintenir",
-        "txt": "Les équipes sont sensibilisées, formées et proposent activement des améliorations pour pérenniser le 5S.",
-        "expl": "💡 <b>Que vérifier sur le terrain ?</b> Les opérateurs proposent-ils des idées d'amélioration (Quick Wins / propositions Kaizen) et participent-ils aux rituels 5S avec rigueur ?"
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."
     }
 ]
 
@@ -866,116 +851,6 @@ button[aria-label*="Zone 10"], div[data-testid="stButton"] button[aria-label*="Z
         box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5) !important;
     }
 
-
-    /* --- SÉLECTEURS DE PROTECTION HYBRIDES (ARIA-LABEL + HAS MARKER) --- */
-    
-    /* BOUTONS HOMMES (VRAI BLEU OCÉAN / CYAN NÉON) */
-    div:has(.boy-marker) + div button,
-    div:has(.boy-marker) + div div[data-testid="stButton"] button,
-    button[aria-label*="Damien"], button[aria-label*="Anthony"], button[aria-label*="Jonathan"],
-    button[aria-label*="Thomas"], button[aria-label*="Gaspard"], button[aria-label*="Dimitri"], button[aria-label*="Frédéric"] {
-        background: linear-gradient(135deg, #0284C7 0%, #1E3A8A 100%) !important;
-        border: 3px solid #38BDF8 !important;
-        border-bottom: 8px solid #0369A1 !important;
-        color: #FFFFFF !important;
-        font-size: 32px !important;
-        font-weight: 900 !important;
-        height: 100px !important;
-        border-radius: 20px !important;
-        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6) !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important;
-        letter-spacing: 1px !important;
-    }
-    
-    /* BOUTONS FEMMES (VRAI ROSE MAGENTA / FUCHSIA) */
-    div:has(.girl-marker) + div button,
-    div:has(.girl-marker) + div div[data-testid="stButton"] button,
-    button[aria-label*="Audrey"], button[aria-label*="Mariia"], button[aria-label*="Céline"], button[aria-label*="Nathalie"] {
-        background: linear-gradient(135deg, #BE185D 0%, #DB2777 50%, #F472B6 100%) !important;
-        border: 3px solid #F472B6 !important;
-        border-bottom: 8px solid #9D174D !important;
-        color: #FFFFFF !important;
-        font-size: 32px !important;
-        font-weight: 900 !important;
-        height: 100px !important;
-        border-radius: 20px !important;
-        box-shadow: 0 12px 30px rgba(219, 39, 119, 0.6) !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important;
-        letter-spacing: 1px !important;
-    }
-
-    /* SPECTRE DÉGRADÉ CONTINU ZONES 1 À 10 */
-    div:has(.zone-marker-0) + div button, button[aria-label*="Zone 1"] { background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important; border: 3px solid #38BDF8 !important; border-bottom: 8px solid #075985 !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-1) + div button, button[aria-label*="Zone 2"] { background: linear-gradient(135deg, #0284C7 0%, #0D9488 100%) !important; border: 3px solid #2DD4BF !important; border-bottom: 8px solid #0F766E !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-2) + div button, button[aria-label*="Zone 3"] { background: linear-gradient(135deg, #0D9488 0%, #059669 100%) !important; border: 3px solid #34D399 !important; border-bottom: 8px solid #047857 !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-3) + div button, button[aria-label*="Zone 4"] { background: linear-gradient(135deg, #059669 0%, #16A34A 100%) !important; border: 3px solid #4ADE80 !important; border-bottom: 8px solid #15803D !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-4) + div button, button[aria-label*="Zone 5"] { background: linear-gradient(135deg, #16A34A 0%, #CA8A04 100%) !important; border: 3px solid #FACC15 !important; border-bottom: 8px solid #A16207 !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-5) + div button, button[aria-label*="Zone 6"] { background: linear-gradient(135deg, #CA8A04 0%, #EA580C 100%) !important; border: 3px solid #FB923C !important; border-bottom: 8px solid #C2410C !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-6) + div button, button[aria-label*="Zone 7"] { background: linear-gradient(135deg, #EA580C 0%, #E11D48 100%) !important; border: 3px solid #FB7185 !important; border-bottom: 8px solid #BE123C !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-7) + div button, button[aria-label*="Zone 8"] { background: linear-gradient(135deg, #E11D48 0%, #C026D3 100%) !important; border: 3px solid #E879F9 !important; border-bottom: 8px solid #A21CAF !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-8) + div button, button[aria-label*="Zone 9"] { background: linear-gradient(135deg, #C026D3 0%, #9333EA 100%) !important; border: 3px solid #C084FC !important; border-bottom: 8px solid #7E22CE !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-    div:has(.zone-marker-9) + div button, button[aria-label*="Zone 10"] { background: linear-gradient(135deg, #9333EA 0%, #4C1D95 100%) !important; border: 3px solid #A855F7 !important; border-bottom: 8px solid #581C87 !important; font-size: 32px !important; font-weight: 900 !important; height: 100px !important; color: #FFF !important; }
-
-    /* BOUTONS VOTE AUDIT (🟢 OUI = VERT, 🔴 NON = ROUGE, 🔵 N/A = BLEU) */
-    div:has(.vote-marker-oui) + div button, button[aria-label*="OUI"] {
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
-        border: 3px solid #34D399 !important;
-        border-bottom: 8px solid #047857 !important;
-        color: #FFFFFF !important;
-        font-size: 30px !important;
-        font-weight: 900 !important;
-        height: 90px !important;
-    }
-    div:has(.vote-marker-non) + div button, button[aria-label*="NON"] {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
-        border: 3px solid #FCA5A5 !important;
-        border-bottom: 8px solid #B91C1C !important;
-        color: #FFFFFF !important;
-        font-size: 30px !important;
-        font-weight: 900 !important;
-        height: 90px !important;
-    }
-    div:has(.vote-marker-na) + div button, button[aria-label*="N/A"] {
-        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
-        border: 3px solid #93C5FD !important;
-        border-bottom: 8px solid #1E40AF !important;
-        color: #FFFFFF !important;
-        font-size: 30px !important;
-        font-weight: 900 !important;
-        height: 90px !important;
-    }
-
-
-    /* --- STYLE CASE EXPLICATION DE L'ÉTAPE 5S --- */
-    .question-expl-box {
-        background: rgba(14, 116, 144, 0.25) !important;
-        border-left: 5px solid #38BDF8 !important;
-        border-radius: 12px !important;
-        padding: 14px 18px !important;
-        margin-top: 12px !important;
-        font-size: 1.05rem !important;
-        color: #E2E8F0 !important;
-        line-height: 1.5 !important;
-    }
-
-    /* --- STYLE BOUTON AJOUTER UN COMMENTAIRE --- */
-    .add-comment-btn-wrap button {
-        background: linear-gradient(135deg, #1E293B 0%, #334155 100%) !important;
-        border: 2px dashed #38BDF8 !important;
-        color: #38BDF8 !important;
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
-        height: 60px !important;
-        border-radius: 14px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
-    }
-    .add-comment-btn-wrap button:hover {
-        background: #334155 !important;
-        color: #FFFFFF !important;
-        border-color: #7DD3FC !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1242,39 +1117,19 @@ else:
                 st.progress(pct_prog / 100.0)
                 st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Étape {idx + 1} sur {total_q} ({pct_prog}%)</p>", unsafe_allow_html=True)
                 
-                # Carte de la question avec Explications du Standard
-                expl_html = f"<div class='question-expl-box'>{crit.get('expl', '')}</div>" if crit.get('expl') else ""
                 st.markdown(f"""
                 <div class='question-card'>
                     <div class='question-cat'>{crit['cat']}</div>
                     <div class='question-text'>{crit['txt']}</div>
-                    {expl_html}
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Bouton et case texte "Ajouter un commentaire"
-                com_box_key = f"show_com_box_{crit['id']}"
+                # Champ de commentaire spécifique à cette étape
+                step_comment_key = f"step_comment_{crit['id']}"
                 existing_comment = st.session_state.answers.get(f"{crit['id']}_comment", "")
-                
-                # Si un commentaire a déjà été saisi, garder la zone affichée
-                if existing_comment:
-                    st.session_state[com_box_key] = True
-                
-                if not st.session_state.get(com_box_key, False):
-                    st.markdown("<div class='add-comment-btn-wrap'>", unsafe_allow_html=True)
-                    if st.button("💬 Ajouter un commentaire à cette étape", key=f"btn_add_com_{idx}", use_container_width=True):
-                        st.session_state[com_box_key] = True
-                        log_click_event(f"CLIC_AJOUTER_COMMENTAIRE_Étape_{idx+1}", crit["cat"])
-                        st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    step_comment = ""
-                else:
-                    step_comment_input = st.text_area(f"✍️ Saisissez votre commentaire (Étape {idx+1}) :", value=existing_comment, key=f"input_com_{crit['id']}", height=100)
-                    step_comment = step_comment_input.strip()
-                    if step_comment:
-                        st.session_state.answers[f"{crit['id']}_comment"] = step_comment
-                    else:
-                        st.session_state.answers.pop(f"{crit['id']}_comment", None)
+                step_comment = st.text_input(f"💬 Commentaire / Observation spécifique (Étape {idx+1}) :", value=existing_comment, key=step_comment_key)
+                if step_comment.strip():
+                    st.session_state.answers[f"{crit['id']}_comment"] = step_comment.strip()
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 c_v1, c_v2, c_v3 = st.columns(3)
