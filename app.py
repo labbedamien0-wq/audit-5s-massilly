@@ -413,6 +413,95 @@ st.markdown("""
         border-radius: 10px !important;
         background: #1E293B !important;
     }
+
+    /* ========================================== EXPLOSION DE PARTICULES 3D PLEIN ÉCRAN ========================================== */
+    .explosion-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 999999 !important;
+        background: rgba(10, 17, 40, 0.92) !important;
+        backdrop-filter: blur(12px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .explosion-core-flash {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, #FFFFFF 0%, #38BDF8 50%, rgba(56,189,248,0) 100%);
+        border-radius: 50%;
+        animation: coreFlash 1.1s ease-out forwards;
+    }
+
+    @keyframes coreFlash {
+        0% { transform: scale(0.1); opacity: 1; filter: drop-shadow(0 0 50px #38BDF8); }
+        50% { transform: scale(8); opacity: 0.9; filter: drop-shadow(0 0 120px #FFFFFF); }
+        100% { transform: scale(25); opacity: 0; }
+    }
+
+    .particle-3d {
+        position: absolute;
+        font-size: 2.8rem;
+        user-select: none;
+        animation: burstOut 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+
+    @keyframes burstOut {
+        0% {
+            transform: translate(0, 0) scale(0.2) rotate(0deg);
+            opacity: 1;
+            filter: drop-shadow(0 0 10px #38BDF8);
+        }
+        70% {
+            opacity: 1;
+            filter: drop-shadow(0 0 25px #F59E0B);
+        }
+        100% {
+            transform: translate(var(--tx), var(--ty)) scale(2.2) rotate(var(--rot));
+            opacity: 0;
+            filter: drop-shadow(0 0 40px rgba(255,255,255,0));
+        }
+    }
+
+    /* --- LOGO 5S FLOTTANT 3D HAUTE DÉFINITION (ACCUEIL) --- */
+    .logo-5s-3d-floating {
+        background: linear-gradient(135deg, rgba(14, 82, 158, 0.35), rgba(15, 23, 42, 0.9)) !important;
+        border: 3px solid #38BDF8 !important;
+        border-radius: 26px !important;
+        padding: 40px 25px !important;
+        text-align: center !important;
+        margin: 30px auto !important;
+        max-width: 800px !important;
+        box-shadow: 
+            0 20px 50px rgba(56, 189, 248, 0.35),
+            inset 0 0 30px rgba(56, 189, 248, 0.25) !important;
+        transform: perspective(900px) rotateX(8deg);
+        animation: floatLogo5S 3.5s ease-in-out infinite alternate !important;
+    }
+
+    @keyframes floatLogo5S {
+        0% { transform: perspective(900px) rotateX(8deg) translateY(0px) scale(0.99); }
+        100% { transform: perspective(900px) rotateX(8deg) translateY(-12px) scale(1.02); }
+    }
+
+    .logo-5s-3d-text {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 3.8rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #0E529E 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 10px 25px rgba(56, 189, 248, 0.5) !important;
+        letter-spacing: 4px;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -424,31 +513,61 @@ if st.session_state.get("test_mode", False):
 
 
 # ========================================== ÉCRAN DE CONNEXION MULTI-ÉTAPES (ETAPES 0 à 3)
+# ========================================== ÉCRAN 0 : ACCUEIL ET LOGO 5S FLOTTANT AVEC EXPLOSION
 if not st.session_state.get("user_authenticated", False):
+    
+    # ÉCRAN DE L'EXPLOSION LORS DU CLIC SUR ENTRER
+    if st.session_state.get("show_explosion", False):
+        import time
+        import random
+        
+        # Génération dynamique de 45 particules explosives en 3D
+        particles_html = "<div class='explosion-overlay'><div class='explosion-core-flash'></div>"
+        symbols = ["✨", "💥", "🌟", "⚡", "⭐", "📦", "👑", "🎯", "🔥", "🚀", "💫", "🏆"]
+        
+        for i in range(48):
+            sym = random.choice(symbols)
+            angle = (i / 48.0) * 360.0
+            dist = random.randint(280, 750)
+            import math
+            rad = math.radians(angle)
+            tx = int(math.cos(rad) * dist)
+            ty = int(math.sin(rad) * dist)
+            rot = random.randint(-540, 540)
+            particles_html += f"<div class='particle-3d' style='--tx: {tx}px; --ty: {ty}px; --rot: {rot}deg;'>{sym}</div>"
+            
+        particles_html += "</div>"
+        st.markdown(particles_html, unsafe_allow_html=True)
+        
+        # Pause de 1.1s pour voir l'explosion éclater à l'écran
+        time.sleep(1.1)
+        st.session_state.show_explosion = False
+        st.session_state.auth_step = 1
+        st.rerun()
+
     auth_step = st.session_state.get("auth_step", 0)
     
-    # ÉTAPE 0 : ACCUEIL PRESTIGE BOÎTE DÉCORÉE MASSILLY 1911
+    # ÉTAPE 0 : ACCUEIL AVEC LOGO 5S FLOTTANT 3D
     if auth_step == 0:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='user-id-badge-3d'>✨ BIENVENUE CHEZ MASSILLY ✨</div>", unsafe_allow_html=True)
         
+        # Le Grand Logo 5S Flottant 3D
         st.markdown("""
-        <div class='massilly-box-card-3d'>
-            <div style='font-size: 4.5rem; margin-bottom: 10px;'>🎁</div>
-            <div style='font-family: "Playfair Display", serif; font-size: 2.2rem; font-weight: 900; color: #F59E0B; letter-spacing: 4px;'>
-                MASSILLY 1911
+        <div class='logo-5s-3d-floating'>
+            <div class='logo-5s-3d-text'>✨ 5S LOGISTIQUE ✨</div>
+            <div style='font-size: 1.45rem; font-weight: 800; color: #38BDF8; letter-spacing: 5px; text-transform: uppercase; margin-top: 15px;'>
+                SEIRI • SEITON • SEISO • SEIKETSU • SHITSUKE
             </div>
-            <div style='font-size: 1.1rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px;'>
-                FABRIQUÉ EN FRANCE • BOÎTE DÉCORÉE PREMIUM
-            </div>
-            <div style='font-size: 0.95rem; color: #94A3B8; margin-top: 10px; font-weight: 600;'>
-                PORTAIL D'EXCELLENCE OPÉRATIONNELLE ET LOGISTIQUE 5S
+            <div style='font-size: 1.1rem; color: #94A3B8; margin-top: 12px; font-weight: 600; letter-spacing: 1.5px;'>
+                MÉTHODE D'EXCELLENCE OPÉRATIONNELLE MASSILLY
             </div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
         if st.button("🚀 ENTRER DANS L'APPLICATION 5S", use_container_width=True):
-            st.session_state.auth_step = 1
+            st.session_state.show_explosion = True
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
