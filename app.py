@@ -571,7 +571,133 @@ st.markdown("""
         text-shadow: 0 10px 20px rgba(56, 189, 248, 0.4) !important;
         letter-spacing: 4px !important;
     }
-    </style>
+    
+    /* --- LA BOÎTE DÉCORÉE MASSILLY 3D ET ANIMATION D'OUVERTURE CINÉMATIQUE --- */
+    .box-scene-3d {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 480px;
+        margin: 20px auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .massilly-box-3d {
+        width: 320px;
+        height: 220px;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateX(18deg) rotateY(-12deg);
+        transition: transform 1.1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease;
+        cursor: pointer;
+    }
+
+    .massilly-box-3d:hover {
+        transform: rotateX(8deg) rotateY(0deg) scale(1.04);
+    }
+
+    .box-body {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0A1E3F 0%, #0E529E 60%, #062850 100%) !important;
+        border: 4px solid #F59E0B !important; /* Dorure Or Massilly */
+        border-radius: 22px !important;
+        box-shadow: 
+            0 25px 60px rgba(0, 0, 0, 0.8),
+            inset 0 0 35px rgba(56, 189, 248, 0.4),
+            0 0 30px rgba(245, 158, 11, 0.3) !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px !important;
+        box-sizing: border-box;
+    }
+
+    .box-emblem {
+        font-size: 3.5rem !important;
+        filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.6)) !important;
+    }
+
+    .box-title {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 1.5rem !important;
+        font-weight: 900 !important;
+        color: #FFFFFF !important;
+        letter-spacing: 3px !important;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+    }
+
+    .box-subtitle {
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        color: #F59E0B !important;
+        letter-spacing: 3px !important;
+        margin-top: 4px !important;
+        text-transform: uppercase;
+    }
+
+    .box-lid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1E3A8A 0%, #0E529E 60%, #0F172A 100%) !important;
+        border: 5px solid #F59E0B !important;
+        border-radius: 22px !important;
+        transform-origin: top center;
+        transform-style: preserve-3d;
+        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 1.2s ease !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.7) !important;
+    }
+
+    .box-latch {
+        font-size: 1.4rem;
+        margin-top: 8px;
+        filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
+    }
+
+    .box-interior-glow {
+        position: absolute;
+        top: 5%;
+        left: 5%;
+        width: 90%;
+        height: 90%;
+        background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(56,189,248,0.8) 50%, rgba(14,82,158,0) 80%) !important;
+        opacity: 0;
+        transition: opacity 0.8s ease, transform 1.2s ease !important;
+        border-radius: 18px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* ANIMATIONS D'OUVERTURE DE LA BOÎTE DÉCORÉE */
+    .massilly-box-3d.opening .box-lid {
+        transform: rotateX(-125deg) translateY(-15px) !important;
+        box-shadow: 0 -35px 90px rgba(245, 158, 11, 0.95) !important;
+    }
+
+    .massilly-box-3d.opening .box-interior-glow {
+        opacity: 1 !important;
+        transform: scale(1.6) !important;
+    }
+
+    .massilly-box-3d.zoom-inside {
+        transform: perspective(300px) translateZ(900px) scale(14) !important;
+        opacity: 0 !important;
+    }
+
+</style>
 """, unsafe_allow_html=True)
 
 # Affichage permanent du titre principal extrudé 3D
@@ -589,141 +715,69 @@ if not st.session_state.get("user_authenticated", False):
     if auth_step == 0:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Titre d'ouverture luminescent 3D
+        # En-tête de bienvenue épuré et prestigieux
         st.markdown("""
-        <div style='text-align: center; margin-bottom: 10px;'>
-            <div style='font-size: 1.2rem; font-weight: 800; color: #38BDF8; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 5px;'>
+        <div style='text-align: center; margin-bottom: 15px;'>
+            <div style='font-size: 1.15rem; font-weight: 800; color: #38BDF8; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 6px;'>
                 GROUPE MASSILLY • FONDÉ EN 1911
             </div>
-            <h1 style='font-family: "Playfair Display", serif; font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); text-transform: uppercase;'>
+            <h1 style='font-family: "Playfair Display", serif; font-size: 3.4rem; font-weight: 900; background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); text-transform: uppercase;'>
                 ✨ BIENVENUE CHEZ MASSILLY ✨
             </h1>
-            <div style='font-size: 1.15rem; color: #94A3B8; font-weight: 700; letter-spacing: 2px;'>
-                LEADER MONDIAL DE L'EMBALLAGE MÉTALLIQUE • EXCELLENCE OPÉRATIONNELLE 5S
+            <div style='font-size: 1.1rem; color: #94A3B8; font-weight: 700; letter-spacing: 2px;'>
+                PORTAIL D'EXCELLENCE OPÉRATIONNELLE ET LOGISTIQUE 5S
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Vitrine 3D des produits emblématiques Massilly (Issus des sources du Carnet)
+        # La Boîte Décorée Massilly 3D Interactive
         st.markdown("""
-        <div class='massilly-products-grid'>
-            <div class='product-badge-3d'>
-                <span class='product-badge-icon'>🥫</span>
-                <div class='product-badge-title'>Conserves Alimentaires</div>
-                <div class='product-badge-sub'>Plus de 85 formats • Légumes, poissons & plats cuisinés</div>
-            </div>
-            <div class='product-badge-3d'>
-                <span class='product-badge-icon'>🍾</span>
-                <div class='product-badge-title'>Capsules EuroCap & Twist</div>
-                <div class='product-badge-sub'>Bouchage hermétique • Diamètres 52 à 100mm avec Flip Panel</div>
-            </div>
-            <div class='product-badge-3d'>
-                <span class='product-badge-icon'>🎁</span>
-                <div class='product-badge-title'>Boîtes Décorées Premium</div>
-                <div class='product-badge-sub'>Origine France Garantie • Coffrets & boîtes à biscuits</div>
-            </div>
-            <div class='product-badge-3d'>
-                <span class='product-badge-icon'>💈</span>
-                <div class='product-badge-title'>Aérosols Tinplate</div>
-                <div class='product-badge-sub'>100% Recyclables • Vernis BPA-NI • Cosmétique & Chimie</div>
-            </div>
-            <div class='product-badge-3d'>
-                <span class='product-badge-icon'>🛢️</span>
-                <div class='product-badge-title'>Emballages Industriels</div>
-                <div class='product-badge-sub'>Seaux coniques, bidons rectangulaires & fermeture Top Lock</div>
+        <div class='box-scene-3d'>
+            <div id='massillyBox' class='massilly-box-3d' onclick='triggerBoxOpening()'>
+                <!-- Intérieur lumineux de la boîte -->
+                <div class='box-interior-glow' id='boxGlow'></div>
+                
+                <!-- Corps de la boîte -->
+                <div class='box-body'>
+                    <div class='box-emblem'>🎁</div>
+                    <div class='box-title'>MASSILLY 1911</div>
+                    <div class='box-subtitle'>Boîte Décorée Premium</div>
+                </div>
+                
+                <!-- Couvercle articulé -->
+                <div class='box-lid' id='boxLid'>
+                    <div style='font-size: 3.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));'>⚙️</div>
+                    <div style='font-family: "Playfair Display", serif; font-size: 1.5rem; font-weight: 900; color: #FFFFFF; letter-spacing: 3px; text-shadow: 0 2px 6px rgba(0,0,0,0.8); margin-top: 5px;'>
+                        MASSILLY
+                    </div>
+                    <div style='font-size: 0.8rem; color: #F59E0B; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px;'>
+                        FABRIQUÉ EN FRANCE • 5S
+                    </div>
+                    <div class='box-latch'>🔒</div>
+                </div>
             </div>
         </div>
+        
+        <script>
+            function triggerBoxOpening() {
+                const box = document.getElementById('massillyBox');
+                if (box) {
+                    box.classList.add('opening');
+                    setTimeout(() => {
+                        box.classList.add('zoom-inside');
+                    }, 350);
+                }
+            }
+        </script>
         """, unsafe_allow_html=True)
 
-        # Grand logo 5S de la méthode
-        st.markdown("""
-        <div class='logo-5s-3d-floating'>
-            <div class='logo-5s-3d-text'>✨ 5S LOGISTIQUE ✨</div>
-            <div style='font-size: 1.35rem; font-weight: 800; color: #38BDF8; letter-spacing: 4px; text-transform: uppercase; margin-top: 12px;'>
-                SEIRI • SEITON • SEISO • SEIKETSU • SHITSUKE
-            </div>
-            <div style='font-size: 1.05rem; color: #94A3B8; margin-top: 8px; font-weight: 600;'>
-                AUDITS & RITUELS DE RIGUEUR TECHNIQUE MASSILLY
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Déclenchement visuel d'explosion de boîtes & capsules
-        if st.session_state.get("trigger_explosion", False):
-            st.session_state["trigger_explosion"] = False
-            st.markdown("""
-            <canvas id='massillyCanvas' class='explosion-canvas'></canvas>
-            <script>
-                (function() {
-                    const canvas = document.getElementById('massillyCanvas');
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-
-                    const emojis = ['🥫', '🍾', '🎁', '💈', '🛢️', '📦', '👑', '✨', '⚡', '💥', '🌟', '🎨'];
-                    const particles = [];
-                    const cx = canvas.width / 2;
-                    const cy = canvas.height / 2;
-
-                    for (let i = 0; i < 80; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const speed = 7 + Math.random() * 20;
-                        particles.push({
-                            x: cx,
-                            y: cy,
-                            vx: Math.cos(angle) * speed,
-                            vy: Math.sin(angle) * speed - 4,
-                            size: 30 + Math.random() * 35,
-                            emoji: emojis[Math.floor(Math.random() * emojis.length)],
-                            rotation: Math.random() * Math.PI * 2,
-                            vRot: (Math.random() - 0.5) * 0.25,
-                            alpha: 1,
-                            decay: 0.010 + Math.random() * 0.012
-                        });
-                    }
-
-                    function animate() {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        let active = 0;
-                        particles.forEach(p => {
-                            if (p.alpha > 0) {
-                                active++;
-                                p.x += p.vx;
-                                p.y += p.vy;
-                                p.vy += 0.28;
-                                p.rotation += p.vRot;
-                                p.alpha -= p.decay;
-
-                                ctx.save();
-                                ctx.globalAlpha = Math.max(0, p.alpha);
-                                ctx.translate(p.x, p.y);
-                                ctx.rotate(p.rotation);
-                                ctx.font = p.size + 'px sans-serif';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText(p.emoji, 0, 0);
-                                ctx.restore();
-                            }
-                        });
-                        if (active > 0) {
-                            requestAnimationFrame(animate);
-                        }
-                    }
-                    animate();
-                })();
-            </script>
-            """, unsafe_allow_html=True)
-
-        # Giga bouton d'entrée avec pulsation et effet explosion
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🚀 ENTRER DANS L'APPLICATION 5S", use_container_width=True):
-            st.session_state["trigger_explosion"] = True
+        if st.button("🎁 OUVRIR LA BOÎTE & ENTRER DANS L'APPLICATION", use_container_width=True):
             st.session_state.auth_step = 1
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-    
+        
     elif auth_step == 1:
         st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 25px;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
