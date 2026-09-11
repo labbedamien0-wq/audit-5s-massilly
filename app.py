@@ -475,10 +475,11 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(14, 82, 158, 0.35), rgba(15, 23, 42, 0.9)) !important;
         border: 3px solid #38BDF8 !important;
         border-radius: 26px !important;
-        padding: 40px 25px !important;
+        padding: 30px 15px !important;
         text-align: center !important;
-        margin: 30px auto !important;
-        max-width: 800px !important;
+        margin: 20px auto !important;
+        max-width: 90vw !important;
+        width: 100% !important;
         box-shadow: 
             0 20px 50px rgba(56, 189, 248, 0.35),
             inset 0 0 30px rgba(56, 189, 248, 0.25) !important;
@@ -493,13 +494,43 @@ st.markdown("""
 
     .logo-5s-3d-text {
         font-family: 'Playfair Display', serif !important;
-        font-size: 3.8rem !important;
+        font-size: clamp(1.6rem, 6.5vw, 3.2rem) !important;
         font-weight: 900 !important;
+        text-align: center !important;
+        display: block !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
         background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #0E529E 100%) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         text-shadow: 0 10px 25px rgba(56, 189, 248, 0.5) !important;
-        letter-spacing: 4px;
+        letter-spacing: 2px !important;
+        white-space: normal !important;
+        word-break: keep-all !important;
+        line-height: 1.25 !important;
+    }
+
+    /* --- CARTE BLEU (GARÇONS) ET CARTE ROSE (FILLES) --- */
+    .boy-card button, div.boy-card button {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #38BDF8 100%) !important;
+        border: 2px solid #60A5FA !important;
+        border-bottom: 6px solid #1D4ED8 !important;
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4) !important;
+    }
+    .girl-card button, div.girl-card button {
+        background: linear-gradient(135deg, #831843 0%, #DB2777 50%, #F472B6 100%) !important;
+        border: 2px solid #F472B6 !important;
+        border-bottom: 6px solid #9D174D !important;
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(219, 39, 119, 0.4) !important;
     }
 
 </style>
@@ -600,83 +631,82 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # ÉTAPE 2 : CHOIX DU NOM (BADGES DE COULEURS DEFILANTS)
+            # ÉTAPE 2 : CHOIX DE L'UTILISATEUR (BLEU GARÇON / ROSE FILLE)
     elif auth_step == 2:
         st.markdown("<div class='user-id-badge-3d'>👤 SÉLECTION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur votre prénom pour continuer :</p>", unsafe_allow_html=True)
-        
+
         PERSONNES_BADGES = [
-            {"prenom": "Damien", "nom": "Labbé", "full": "Damien Labbé", "icon": "⚡", "sub": "Alternant Méthodes 5S", "cls": "p-color-0"},
-            {"prenom": "Audrey", "nom": "Sordet", "full": "Audrey Sordet", "icon": "🎯", "sub": "Sponsor Zone 1", "cls": "p-color-1"},
-            {"prenom": "Anthony", "nom": "Duplessis", "full": "Anthony Duplessis", "icon": "📦", "sub": "Sponsor Zone 2", "cls": "p-color-2"},
-            {"prenom": "Jonathan", "nom": "Mele", "full": "Jonathan Mele", "icon": "🚚", "sub": "Sponsor Zone 3", "cls": "p-color-3"},
-            {"prenom": "Thomas", "nom": "Collin", "full": "Thomas Collin", "icon": "📋", "sub": "Sponsor Zone 4", "cls": "p-color-4"},
-            {"prenom": "Gaspard", "nom": "Sommereux", "full": "Gaspard Sommereux", "icon": "🥫", "sub": "Sponsor Zone 5", "cls": "p-color-5"},
-            {"prenom": "Mariia", "nom": "Leliukh", "full": "Mariia Leliukh", "icon": "🏭", "sub": "Sponsor Zone 6", "cls": "p-color-6"},
-            {"prenom": "Céline", "nom": "Hereng", "full": "Céline Hereng", "icon": "📑", "sub": "Sponsor Zone 7", "cls": "p-color-7"},
-            {"prenom": "Dimitri", "nom": "Dupasquier", "full": "Dimitri Dupasquier", "icon": "⚙️", "sub": "Sponsor Zone 8", "cls": "p-color-8"},
-            {"prenom": "Frédéric", "nom": "Bouvy", "full": "Frédéric Bouvy", "icon": "🔧", "sub": "Sponsor Zone 9", "cls": "p-color-9"},
-            {"prenom": "Nathalie", "nom": "Berthelin", "full": "Nathalie Berthelin", "icon": "🛡️", "sub": "Sponsor Zone 10", "cls": "p-color-10"}
+            {"prenom": "Damien", "full": "Damien Labbé", "icon": "⚡", "gender": "boy"},
+            {"prenom": "Audrey", "full": "Audrey Sordet", "icon": "🎯", "gender": "girl"},
+            {"prenom": "Anthony", "full": "Anthony Duplessis", "icon": "📦", "gender": "boy"},
+            {"prenom": "Jonathan", "full": "Jonathan Mele", "icon": "🚚", "gender": "boy"},
+            {"prenom": "Thomas", "full": "Thomas Collin", "icon": "📋", "gender": "boy"},
+            {"prenom": "Gaspard", "full": "Gaspard Sommereux", "icon": "🥫", "gender": "boy"},
+            {"prenom": "Mariia", "full": "Mariia Leliukh", "icon": "🏭", "gender": "girl"},
+            {"prenom": "Céline", "full": "Céline Hereng", "icon": "📑", "gender": "girl"},
+            {"prenom": "Dimitri", "full": "Dupasquier Dimitri", "icon": "⚙️", "gender": "boy"},
+            {"prenom": "Frédéric", "full": "Frédéric Bouvy", "icon": "🔧", "gender": "boy"},
+            {"prenom": "Nathalie", "full": "Nathalie Berthelin", "icon": "🛡️", "gender": "girl"}
         ]
-        
-        # Grille 2 colonnes tactile de badges colorés
+
+        # Grille 2 colonnes tactile de badges (Bleu pour Garçon, Rose pour Fille)
         col_p1, col_p2 = st.columns(2)
         for idx, p in enumerate(PERSONNES_BADGES):
             target_col = col_p1 if idx % 2 == 0 else col_p2
+            card_cls = "boy-card" if p["gender"] == "boy" else "girl-card"
             with target_col:
-                st.markdown(f"<div class='person-badge-wrap {p['cls']}'>", unsafe_allow_html=True)
-                lbl = f"{p['icon']}  {p['prenom']}  •  {p['sub']}"
+                st.markdown(f"<div class='{card_cls}'>", unsafe_allow_html=True)
+                lbl = f"{p['icon']}  {p['prenom']}"
                 if st.button(lbl, key=f"p_badge_{idx}", use_container_width=True):
                     st.session_state.user_name = p['full']
                     st.session_state.auth_step = 3
                     st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
-                
+
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
         if st.button("⬅️ Retour au choix du rôle", use_container_width=True):
             st.session_state.auth_step = 1
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-            
-    # ÉTAPE 3 : SÉLECTION DE LA ZONE (BADGES DE COULEURS DEFILANTS)
+
+    # ÉTAPE 3 : SÉLECTION DE LA ZONE (NOM SEUL DE LA ZONE AVEC DÉGRADÉ)
     elif auth_step == 3:
         st.markdown("<div class='user-id-badge-3d'>📍 SÉLECTION DE LA ZONE LOGISTIQUE</div>", unsafe_allow_html=True)
         st.info(f"Profil actif : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
-        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur une zone pour LANCER LE DIAGNOSTIC :</p>", unsafe_allow_html=True)
-        
+        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur votre zone pour LANCER LE DIAGNOSTIC :</p>", unsafe_allow_html=True)
+
         ZONES_BADGES = [
-            {"key": "Zone 1", "label": "Zone 1 - Filmeuse & quais prod", "sponsor": "Audrey Sordet", "icon": "🎞️", "cls": "z-color-0"},
-            {"key": "Zone 2", "label": "Zone 2 - Bureaux expédition", "sponsor": "Anthony Duplessis", "icon": "🖥️", "cls": "z-color-1"},
-            {"key": "Zone 3", "label": "Zone 3 - Quai chargement", "sponsor": "Jonathan Mele", "icon": "🚛", "cls": "z-color-2"},
-            {"key": "Zone 4", "label": "Zone 4 - Prépa commandes", "sponsor": "Thomas Collin", "icon": "📋", "cls": "z-color-3"},
-            {"key": "Zone 5", "label": "Zone 5 - Emplacements boîtes", "sponsor": "Gaspard Sommereux", "icon": "🥫", "cls": "z-color-4"},
-            {"key": "Zone 6", "label": "Zone 6 - Palettier", "sponsor": "Mariia Leliukh", "icon": "🏗️", "cls": "z-color-5"},
-            {"key": "Zone 7", "label": "Zone 7 - Réception MP & bureaux", "sponsor": "Céline Hereng", "icon": "📦", "cls": "z-color-6"},
-            {"key": "Zone 8", "label": "Zone 8 - Stockage métal", "sponsor": "Dimitri Dupasquier", "icon": "⚙️", "cls": "z-color-7"},
-            {"key": "Zone 9", "label": "Zone 9 - Local joint", "sponsor": "Frédéric Bouvy", "icon": "🧪", "cls": "z-color-8"},
-            {"key": "Zone 10", "label": "Zone 10 - Produits dangereux", "sponsor": "Nathalie Berthelin", "icon": "☣️", "cls": "z-color-9"}
+            {"key": "Zone 1", "icon": "🎞️", "cls": "z-color-0"},
+            {"key": "Zone 2", "icon": "🖥️", "cls": "z-color-1"},
+            {"key": "Zone 3", "icon": "🚛", "cls": "z-color-2"},
+            {"key": "Zone 4", "icon": "📋", "cls": "z-color-3"},
+            {"key": "Zone 5", "icon": "🥫", "cls": "z-color-4"},
+            {"key": "Zone 6", "icon": "🏗️", "cls": "z-color-5"},
+            {"key": "Zone 7", "icon": "📦", "cls": "z-color-6"},
+            {"key": "Zone 8", "icon": "⚙️", "cls": "z-color-7"},
+            {"key": "Zone 9", "icon": "🧪", "cls": "z-color-8"},
+            {"key": "Zone 10", "icon": "☣️", "cls": "z-color-9"}
         ]
-        
-        st.session_state.test_mode = st.checkbox(
-            "🧪 Activer le MODE TEST d'entraînement",
-            value=st.session_state.get("test_mode", False)
-        )
-        
+
         col_z1, col_z2 = st.columns(2)
         for idx, z in enumerate(ZONES_BADGES):
             target_col = col_z1 if idx % 2 == 0 else col_z2
             with target_col:
                 st.markdown(f"<div class='zone-badge-wrap {z['cls']}'>", unsafe_allow_html=True)
-                lbl = f"{z['icon']}  {z['key']}  •  {z['sponsor']}\n{z['label']}"
+                lbl = f"{z['icon']}  {z['key']}"
                 if st.button(lbl, key=f"z_badge_{idx}", use_container_width=True):
                     st.session_state.user_zone = z["key"]
                     st.session_state.user_authenticated = True
+                    st.session_state.audit_started = True # Lancement direct du diagnostic!
+                    st.session_state.current_q_idx = 0
+                    st.session_state.answers = {}
                     st.session_state.auth_step = 0
                     st.session_state.portal_shown = False
                     st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
-                
+
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
         if st.button("⬅️ Retour à la sélection de l'utilisateur", use_container_width=True):
@@ -705,13 +735,17 @@ else:
             
     st.markdown("---")
 
-    # Onglets horizontaux de navigation
-    onglets = ["📋 Saisie d'Audit terrain", "📊 Analyse & Historique", "🗺️ Rappel des Standards"]
-    menu_actif = st.radio("Menu principal :", onglets, horizontal=True, key="menu_actif")
+    # Vérification du rôle Administrateur vs Utilisateur Terrain
+    is_admin = (st.session_state.get('user_role', '') in ["Éditeur (Méthodes / Alternant)", "Administrateur"])
 
-    st.markdown("---")
+    if is_admin:
+        onglets = ["📋 Saisie d'Audit terrain", "📊 Analyse & Historique (Admin)", "🗺️ Rappel des Standards"]
+        menu_actif = st.radio("Menu de Commandement Administrateur :", onglets, horizontal=True, key="menu_actif")
+        st.markdown("---")
+    else:
+        menu_actif = "📋 Saisie d'Audit terrain"
 
-    # ========================================== ONGLET 1 : SAISIE D'AUDIT COMPORTEMENTAL
+    # ========================================== SECTION : SAISIE D'AUDIT COMPORTEMENTAL (DIRECT TERRAIN)
     if menu_actif == "📋 Saisie d'Audit terrain":
         
         if not st.session_state.audit_started:
