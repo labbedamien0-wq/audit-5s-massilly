@@ -18,7 +18,6 @@ def get_gsheets_connection():
             return None
     return None
 
-
 # Configuration de la page
 st.set_page_config(
     page_title="Massilly - Audit 5S Mobile v14",
@@ -125,36 +124,23 @@ CRITERES_OFFICIELS = [
     }
 ]
 
-# Initialisation de l'état de session (Session State)
-if "user_authenticated" not in st.session_state:
-    st.session_state.user_authenticated = False
-if "user_role" not in st.session_state:
-    st.session_state.user_role = ""
-if "user_name" not in st.session_state:
-    st.session_state.user_name = ""
-if "user_zone" not in st.session_state:
-    st.session_state.user_zone = ""
-if "audit_started" not in st.session_state:
-    st.session_state.audit_started = False
-if "current_q_idx" not in st.session_state:
-    st.session_state.current_q_idx = 0
-if "answers" not in st.session_state:
-    st.session_state.answers = {}
-if "test_mode" not in st.session_state:
-    st.session_state.test_mode = False
-if "portal_shown" not in st.session_state:
-    st.session_state.portal_shown = False
-if "auth_step" not in st.session_state:
-    st.session_state.auth_step = 0
-if "selected_role" not in st.session_state:
-    st.session_state.selected_role = "Sponsor de zone"
-if "selected_name" not in st.session_state:
-    st.session_state.selected_name = ""
-if "selected_zone" not in st.session_state:
-    st.session_state.selected_zone = "Zone 1"
+# Initialisation robuste de la session
+st.session_state.setdefault("user_authenticated", False)
+st.session_state.setdefault("user_role", "")
+st.session_state.setdefault("user_name", "")
+st.session_state.setdefault("user_zone", "")
+st.session_state.setdefault("audit_started", False)
+st.session_state.setdefault("current_q_idx", 0)
+st.session_state.setdefault("answers", {})
+st.session_state.setdefault("test_mode", False)
+st.session_state.setdefault("portal_shown", False)
+st.session_state.setdefault("auth_step", 1)
+st.session_state.setdefault("audit_saved", False)
+st.session_state.setdefault("save_result_ok", False)
+st.session_state.setdefault("save_result_err", "")
 
 # Définition dynamique des fichiers de données selon le mode (Réel vs Test)
-if st.session_state.test_mode:
+if st.session_state.get("test_mode", False):
     SHARED_DATA_FILE = "test_suivi_audits_5s.csv"
     SHARED_LOG_FILE = "test_journal_activite_5s.json"
 else:
@@ -182,7 +168,7 @@ def charger_audits():
             if df is not None and not df.empty:
                 df = df.dropna(how="all")
                 return df
-        except Exception as e:
+        except Exception:
             pass
 
     try:
@@ -192,6 +178,7 @@ def charger_audits():
 
 def sauvegarder_audit_local(data_dict):
     gsheets_ok = False
+    err_details = ""
     conn = get_gsheets_connection()
     if conn is not None:
         try:
@@ -213,7 +200,7 @@ def sauvegarder_audit_local(data_dict):
             conn.update(data=updated_df)
             gsheets_ok = True
         except Exception as e:
-            st.error(f"⚠️ Erreur Google Sheets : {e}")
+            err_details = str(e)
 
     # Backup local CSV
     try:
@@ -228,9 +215,9 @@ def sauvegarder_audit_local(data_dict):
     # Journal JSON
     log_entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "type": "TEST - Diagnostic" if st.session_state.test_mode else "Diagnostic Réel",
-        "details": f"Zone {data_dict['Zone']} par {data_dict['Auditeur']} ({data_dict['Score_Total']}/15 - {data_dict['Pourcentage']}%)\"",
-        "gsheets": "OK" if gsheets_ok else "OFFLINE"
+        "type": "TEST - Diagnostic" if st.session_state.get("test_mode", False) else "Diagnostic Réel",
+        "details": f"Zone {data_dict.get('Zone', '')} par {data_dict.get('Auditeur', '')} ({data_dict.get('Score_Total', 0)}/15 - {data_dict.get('Pourcentage', 0)}%)",
+        "gsheets": "OK" if gsheets_ok else f"OFFLINE ({err_details})"
     }
     try:
         with open(SHARED_LOG_FILE, 'r', encoding='utf-8') as f:
@@ -241,15 +228,15 @@ def sauvegarder_audit_local(data_dict):
     with open(SHARED_LOG_FILE, 'w', encoding='utf-8') as f:
         json.dump(logs, f, ensure_ascii=False, indent=4)
 
-    return gsheets_ok
+    return gsheets_ok, err_details
 
 
-# ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY RAL 5017
+# ========================================== STYLE CSS : EFFET WAHOU CINÉMATIQUE 3D ET BLEU MASSILLY
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;700;800&family=Playfair+Display:ital,wght=0,600;0,800;1,600&display=swap');
 
-    /* Fond d'application dynamique (Dégradé de bleus onduleux lent en boucle) */
+    /* Fond d'application dynamique */
     .stApp {
         background: linear-gradient(-45deg, #0A1128, #101F42, #071126, #001F3D) !important;
         background-size: 400% 400% !important;
@@ -264,18 +251,16 @@ st.markdown("""
         100% { background-position: 0% 50%; }
     }
 
-    /* Force la couleur claire pour tous les textes par défaut de Streamlit */
     .stApp label, .stApp p, .stApp span, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {
         color: #F8FAFC !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* CORRECTION RADICALE DU TEXTE BLANC SUR BLANC DANS LES CARTES (RAPPEL DES STANDARDS ET AUDIT) */
     .question-card, .question-card p, .question-card span, .question-card li, .question-card div, .question-card h4, .question-text {
         color: #0F172A !important;
     }
 
-    /* --- TITRE CORPO ULTRA-EXTRUDÉ 3D MÉTALLIQUE ET FLOTTAISON ACTIVE --- */
+    /* --- TITRE CORPO 3D MÉTALLIQUE FLOTTAISON --- */
     .main-header-3d {
         font-family: 'Playfair Display', serif !important;
         font-weight: 900 !important;
@@ -287,7 +272,6 @@ st.markdown("""
         background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
-        /* Effet d'extrusion 3D physique lourde */
         text-shadow: 
             0 1px 0 #E2E8F0,
             0 2px 0 #CBD5E1,
@@ -307,15 +291,8 @@ st.markdown("""
         0% { transform: perspective(800px) rotateX(15deg) translateY(0px) rotateY(-1deg); }
         100% { transform: perspective(800px) rotateX(15deg) translateY(-10px) rotateY(1deg); }
     }
-    .main-header-3d:hover {
-        transform: perspective(800px) rotateX(5deg) scale(1.03) !important;
-        text-shadow: 
-            0 1px 0 #38BDF8,
-            0 2px 0 #0E529E,
-            0 8px 25px rgba(56, 189, 248, 0.5) !important;
-    }
 
-    /* --- ENCART DE TITRE : IDENTIFICATION DE L'UTILISATEUR (PLAQUE PRO PRESTIGE CYBER-3D) --- */
+    /* --- BADGE PORTAIL D'IDENTIFICATION 3D --- */
     .user-id-badge-3d {
         background: linear-gradient(135deg, #1E293B, #0B1329) !important;
         border: 3px solid #38BDF8 !important;
@@ -326,7 +303,7 @@ st.markdown("""
         font-size: 1.7rem !important;
         font-weight: 900 !important;
         letter-spacing: 5px;
-        margin: 25px auto 40px auto !important;
+        margin: 20px auto 30px auto !important;
         max-width: 820px;
         box-shadow: 
             0 15px 35px rgba(56, 189, 248, 0.4),
@@ -334,44 +311,7 @@ st.markdown("""
         text-shadow: 0 0 12px rgba(56, 189, 248, 0.7) !important;
         transform: perspective(800px) rotateX(10deg);
         animation: floatBadge 3.2s ease-in-out infinite alternate !important;
-        border-bottom: 8px solid #005F73 !important; /* Semelle 3D plaque */
-    }
-
-    /* Style spécifique pour le bouton badge 3D de la page d'accueil */
-    .user-id-badge-3d-btn button {
-        background: linear-gradient(135deg, #1E293B, #0B1329) !important;
-        border: 3px solid #38BDF8 !important;
-        border-radius: 20px !important;
-        color: #FFFFFF !important;
-        text-align: center !important;
-        padding: 22px 30px !important;
-        font-size: 1.65rem !important;
-        font-weight: 900 !important;
-        letter-spacing: 4px !important;
-        margin: 25px auto 40px auto !important;
-        width: 100% !important;
-        max-width: 850px !important;
-        height: auto !important;
-        min-height: 90px !important;
-        box-shadow: 
-            0 15px 35px rgba(56, 189, 248, 0.4),
-            inset 0 0 25px rgba(56, 189, 248, 0.3) !important;
-        text-shadow: 0 0 12px rgba(56, 189, 248, 0.7) !important;
-        transform: perspective(800px) rotateX(10deg) !important;
-        animation: floatBadge 3.2s ease-in-out infinite alternate !important;
         border-bottom: 8px solid #005F73 !important;
-        cursor: pointer !important;
-    }
-    .user-id-badge-3d-btn button:hover {
-        filter: brightness(1.25) !important;
-        border-color: #38BDF8 !important;
-        box-shadow: 
-            0 22px 50px rgba(56, 189, 248, 0.7),
-            inset 0 0 35px rgba(56, 189, 248, 0.5) !important;
-        transform: perspective(800px) rotateX(0deg) translateY(-8px) scale(1.02) !important;
-    }
-    .user-id-badge-3d-btn button::before {
-        display: none !important;
     }
 
     @keyframes floatBadge {
@@ -379,8 +319,32 @@ st.markdown("""
         100% { transform: perspective(800px) rotateX(10deg) translateY(-8px) scale(1.01); }
     }
 
-    /* --- ONGLES DU MENU PRINCIPAL EN PUISSANT DESIGN PHYSIQUE 3D --- */
-    /* Container global du radiogroup (Le pupitre de commande métallique) */
+    /* --- GROS LOGO 5S FLOTTANT 3D (ACCUEIL) --- */
+    .logo-5s-3d-floating {
+        background: linear-gradient(135deg, rgba(14, 82, 158, 0.25), rgba(15, 23, 42, 0.85)) !important;
+        border: 3px solid #38BDF8 !important;
+        border-radius: 24px !important;
+        padding: 35px 25px !important;
+        text-align: center !important;
+        margin: 30px auto !important;
+        max-width: 820px !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 25px rgba(56, 189, 248, 0.2) !important;
+        animation: floatBadge 3.5s ease-in-out infinite alternate !important;
+    }
+
+    .logo-5s-3d-text {
+        font-size: 4.8rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 8px !important;
+        background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #0E529E 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 10px 20px rgba(56, 189, 248, 0.5) !important;
+        margin: 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    /* --- ONGLETS MENU PRINCIPAL --- */
     div[data-testid="stRadio"] div[role="radiogroup"], 
     div.row-widget.stRadio > div {
         background: linear-gradient(180deg, #1E293B, #0F172A) !important;
@@ -391,21 +355,16 @@ st.markdown("""
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-around !important;
-        box-shadow: 
-            inset 0 4px 12px rgba(0, 0, 0, 0.6),
-            0 10px 20px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0, 0, 0, 0.4) !important;
         perspective: 1000px;
         margin-bottom: 25px !important;
     }
 
-    /* Style par défaut de chaque bouton-onglet (Plaque de métal inactive suspendue) */
     div[data-testid="stRadio"] div[role="radiogroup"] label, 
-    div.row-widget.stRadio label,
-    div[data-testid="stRadio"] div[role="radiogroup"] [data-testid="stWidgetLabel"] {
+    div.row-widget.stRadio label {
         background: linear-gradient(135deg, #334155, #1E293B) !important;
-        color: #94A3B8 !important; /* Contraste soigné gris-bleu clair */
+        color: #94A3B8 !important;
         border: 2px solid #475569 !important;
-        /* Épaisse semelle 3D sous le bouton inactif */
         border-bottom: 6px solid #0F172A !important; 
         border-radius: 14px !important;
         padding: 14px 28px !important;
@@ -414,7 +373,6 @@ st.markdown("""
         cursor: pointer !important;
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
         text-align: center !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
         transform: translateY(-2px) rotateX(10deg);
         display: inline-flex !important;
         align-items: center !important;
@@ -422,46 +380,30 @@ st.markdown("""
         box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
     }
 
-    /* Effet de survol : la plaque s'élève et projette son énergie bleue */
     div[data-testid="stRadio"] div[role="radiogroup"] label:hover, 
     div.row-widget.stRadio label:hover {
         color: #FFFFFF !important;
         border-color: #38BDF8 !important;
         transform: translateY(-6px) rotateX(0deg) scale(1.02) !important;
-        box-shadow: 
-            0 12px 25px rgba(56, 189, 248, 0.35),
-            0 4px 8px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 12px 25px rgba(56, 189, 248, 0.35) !important;
         border-bottom: 8px solid #0E529E !important;
     }
 
-    /* --- L'ONGLET ACTIF : ENFONCEMENT PHYSIQUE ET ALLUMAGE DE SES LUNETTES NÉON --- */
     div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
-    div.row-widget.stRadio label:has(input:checked),
-    div[data-testid="stRadio"] div[role="radiogroup"] div[data-checked="true"] label,
-    div.row-widget.stRadio div[data-checked="true"] label,
-    div[data-testid="stRadio"] div[role="radiogroup"] [aria-checked="true"] label,
-    div.row-widget.stRadio [aria-checked="true"] label,
-    div[data-testid="stRadio"] div[role="radiogroup"] [aria-checked="true"],
-    div.row-widget.stRadio [aria-checked="true"] {
+    div.row-widget.stRadio label:has(input:checked) {
         background: linear-gradient(135deg, #0E529E 0%, #38BDF8 100%) !important;
         color: #FFFFFF !important;
         border-color: #38BDF8 !important;
-        /* Enfoncement physique : la semelle 3D s'écrase */
         border-bottom: 2px solid #063970 !important;
         transform: translateY(4px) rotateX(0deg) scale(0.98) !important;
-        /* Halo de lumière intense sous l'onglet actif */
-        box-shadow: 
-            0 0 35px rgba(56, 189, 248, 0.85),
-            0 0 15px rgba(56, 189, 248, 0.4),
-            inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+        box-shadow: 0 0 35px rgba(56, 189, 248, 0.85), 0 0 15px rgba(56, 189, 248, 0.4), inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
     }
 
-    /* --- CARTES DE CONTENU D'AUDIT EN SUSPENSION (EFFET 3D HAUT CONTRASTE NOIR SUR BLANC) --- */
+    /* --- CARTES DE CRITÈRES 3D --- */
     .question-card {
         background-color: #FFFFFF !important;
         border: 2px solid #E2E8F0 !important;
-        border-left: 8px solid #0E529E !important; /* Signature Bleu Massilly */
+        border-left: 8px solid #0E529E !important;
         border-radius: 20px !important;
         padding: 30px !important;
         margin-bottom: 25px !important;
@@ -469,16 +411,11 @@ st.markdown("""
         transform: perspective(1000px) rotateX(0deg);
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
-    .question-card:hover {
-        transform: perspective(1000px) rotateX(4deg) translateY(-8px) scale(1.01);
-        box-shadow: 0 25px 50px rgba(56, 189, 248, 0.25) !important;
-        border-color: #38BDF8 !important;
-    }
 
     .question-cat {
         font-size: 1.2rem !important;
         font-weight: 800 !important;
-        color: #0E529E !important; /* Bleu Massilly */
+        color: #0E529E !important;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         margin-bottom: 12px;
@@ -487,140 +424,51 @@ st.markdown("""
     .question-text {
         font-size: 1.65rem !important;
         font-weight: 800 !important;
-        color: #0F172A !important; /* Noir ardoise contrasté */
+        color: #0F172A !important;
         line-height: 1.45;
     }
 
-    /* --- ENTRÉES UTILISATEUR & SELECTBOX GLASSMORPHIC --- */
-    div[data-testid="stSelectbox"] > div {
-        height: 60px !important;
-        background-color: rgba(30, 41, 59, 0.85) !important;
-        border: 2px solid #334155 !important;
-        border-radius: 12px !important;
-        transition: border-color 0.2s, box-shadow 0.2s !important;
-    }
-    div[data-testid="stSelectbox"] > div:hover {
-        border-color: #38BDF8 !important;
-        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2) !important;
-    }
-    div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
-        color: #FFFFFF !important;
-        font-size: 20px !important;
-        font-weight: 600 !important;
-    }
-
-    div[data-testid="stTextInput"] input, div[data-testid="stTextArea"] textarea {
-        background-color: rgba(30, 41, 59, 0.85) !important;
-        color: #FFFFFF !important;
-        border: 2px solid #334155 !important;
-        border-radius: 12px !important;
-        font-size: 20px !important;
-        padding: 12px !important;
-    }
-
-    div[data-testid="stTextInput"] label, div[data-testid="stTextArea"] label, div[data-testid="stSelectbox"] label {
-        font-size: 1.25rem !important;
-        font-weight: 700 !important;
-        color: #E2E8F0 !important;
-        margin-bottom: 8px !important;
-    }
-
-    /* --- CARRES DE KPI SUSPENDUS (MODULE DE RESULTATS) --- */
-    div[data-testid="metric-container"] {
-        background: linear-gradient(135deg, #1E293B, #0F172A) !important;
-        border: 2px solid #334155 !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
-        transform: perspective(800px) rotateX(5deg);
-        transition: all 0.3s ease !important;
-    }
-    div[data-testid="metric-container"]:hover {
-        transform: perspective(800px) rotateX(0deg) translateY(-5px);
-        border-color: #38BDF8 !important;
-        box-shadow: 0 15px 30px rgba(56, 189, 248, 0.2) !important;
-    }
-
-    /* ========================================== STYLE GLOBAL DES BOUTONS DE L'APPLICATION (ENTRER / COMMENCER / ENREGISTRER) ========================================== */
-    /* TOUS les boutons standard reçoivent le style Prestige 3D, Shimmer, Pulsation */
-    .stButton > button,
-    div[data-testid="stButton"] button {
+    /* --- BOUTONS GLOBAUX (PRESTIGE 3D) --- */
+    .stButton > button, div[data-testid="stButton"] button {
         background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
         background-size: 200% auto !important;
         color: #FFFFFF !important;
         height: 85px !important;
-        font-size: 26px !important;
+        font-size: 24px !important;
         font-weight: 900 !important;
         border-radius: 20px !important;
         border: none !important;
-        /* Semelle 3D mécanique noire/bleu très épaisse */
         border-bottom: 10px solid #063970 !important;
-        box-shadow: 
-            0 15px 30px rgba(14, 82, 158, 0.45),
-            0 0 20px rgba(56, 189, 248, 0.3) !important;
+        box-shadow: 0 15px 30px rgba(14, 82, 158, 0.45), 0 0 20px rgba(56, 189, 248, 0.3) !important;
         text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
         cursor: pointer;
         position: relative;
         overflow: hidden;
-        letter-spacing: 3px;
+        letter-spacing: 2px;
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        animation: pulseGlow 2s infinite alternate !important;
-    }
-    
-    /* Effet Shimmer (Reflet brillant ultra-visible qui glisse sur le bouton) */
-    .stButton > button::before,
-    div[data-testid="stButton"] button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 40%;
-        height: 100%;
-        background: linear-gradient(
-            to right, 
-            rgba(255,255,255,0) 0%, 
-            rgba(255,255,255,0.6) 50%, 
-            rgba(255,255,255,0) 100%
-        );
-        transform: skewX(-25deg);
-        animation: shineSweep 2.2s infinite !important;
     }
 
-    @keyframes shineSweep {
-        0% { left: -120%; }
-        100% { left: 220%; }
-    }
-
-    .stButton > button:hover,
-    div[data-testid="stButton"] button:hover {
+    .stButton > button:hover, div[data-testid="stButton"] button:hover {
         filter: brightness(1.25) !important;
         background-position: right center !important;
         transform: translateY(-8px) !important;
-        box-shadow: 
-            0 25px 45px rgba(56, 189, 248, 0.75),
-            0 0 40px rgba(56, 189, 248, 0.6) !important;
+        box-shadow: 0 25px 45px rgba(56, 189, 248, 0.75), 0 0 40px rgba(56, 189, 248, 0.6) !important;
         border-bottom: 12px solid #063970 !important;
     }
-    
-    .stButton > button:active,
-    div[data-testid="stButton"] button:active {
+
+    .stButton > button:active, div[data-testid="stButton"] button:active {
         transform: translateY(4px) !important;
         border-bottom: 2px solid #063970 !important;
         box-shadow: 0 4px 10px rgba(14, 82, 158, 0.2) !important;
     }
 
-    @keyframes pulseGlow {
-        0% { box-shadow: 0 10px 20px rgba(14, 82, 158, 0.3), 0 0 10px rgba(56, 189, 248, 0.2); }
-        100% { box-shadow: 0 10px 40px rgba(56, 189, 248, 0.75), 0 0 25px rgba(56, 189, 248, 0.4); }
-    }
-
-    /* --- SPECIFIC OVERRIDES FOR SHINY & GLOSSY START CARD BUTTON --- */
+    /* --- MASTER CARD FUSÉE 3D --- */
     .btn-start-3d button {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        height: 420px !important; /* Super caisson massif */
+        height: 420px !important;
         white-space: pre-wrap !important;
         line-height: 1.5 !important;
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
@@ -628,86 +476,31 @@ st.markdown("""
         font-size: 22px !important;
         font-weight: 800 !important;
         border-radius: 28px !important;
-        border: 4px solid #0E529E !important; /* Cadre Bleu Massilly */
-        border-bottom: 14px solid #063970 !important; /* Énorme semelle 3D mécanique */
-        box-shadow: 
-            0 30px 60px rgba(0,0,0,0.6),
-            0 0 40px rgba(14, 82, 158, 0.4) !important;
+        border: 4px solid #0E529E !important;
+        border-bottom: 14px solid #063970 !important;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(14, 82, 158, 0.4) !important;
         transform: perspective(1000px) rotateX(10deg) translateY(0px) !important;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
         padding: 40px !important;
-        letter-spacing: 1px;
         cursor: pointer !important;
-        position: relative !important;
-        overflow: hidden !important;
-        animation: pulseGreenGlow 3s infinite alternate !important;
     }
 
-    /* Ajoute la fusée géante rotative EN TANT QUE PSEUDO-ÉLÉMENT intégré au bouton de démarrage */
     .btn-start-3d button::before {
         content: "🚀" !important;
-        font-size: 7.5rem !important; /* Giga fusée */
+        font-size: 7.5rem !important;
         display: block !important;
         margin-top: -15px !important;
         margin-bottom: 25px !important;
         animation: spinIcon 7s linear infinite !important;
         filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.8)) !important;
-        background: none !important;
-        width: auto !important;
-        height: auto !important;
     }
 
     @keyframes spinIcon {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    
-    /* Reflet Glossy/Shiny sweep sur le bouton de démarrage */
-    .btn-start-3d button::after {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: -150% !important;
-        width: 80% !important;
-        height: 100% !important;
-        background: linear-gradient(
-            to right, 
-            rgba(255,255,255,0) 0%, 
-            rgba(255,255,255,0.3) 50%, 
-            rgba(255,255,255,0) 100%
-        ) !important;
-        transform: skewX(-25deg) !important;
-        animation: shineSweepStart 2.5s infinite !important;
-    }
-    
-    @keyframes shineSweepStart {
-        0% { left: -150%; }
-        100% { left: 250%; }
-    }
-    
-    .btn-start-3d button:hover {
-        filter: brightness(1.2) !important;
-        transform: perspective(1000px) rotateX(0deg) translateY(-14px) scale(1.03) !important;
-        border-color: #38BDF8 !important;
-        box-shadow: 
-            0 45px 85px rgba(0,0,0,0.7),
-            0 0 60px rgba(56, 189, 248, 0.8) !important;
-        border-bottom: 18px solid #063970 !important;
-    }
-    
-    .btn-start-3d button:active {
-        transform: perspective(1000px) rotateX(0deg) translateY(8px) scale(0.96) !important;
-        border-bottom: 3px solid #063970 !important;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
-    }
-    
-    @keyframes pulseGreenGlow {
-        0% { box-shadow: 0 15px 30px rgba(14, 82, 158, 0.4), 0 0 15px rgba(56, 189, 248, 0.2); }
-        100% { box-shadow: 0 15px 50px rgba(56, 189, 248, 0.85), 0 0 35px rgba(56, 189, 248, 0.5); }
-    }
 
-    /* --- BOUTONS TACTILES GÉANTS POUR AUDIT (OUI / NON / N/A) --- */
+    /* --- BOUTONS DE VOTE (OUI / NON / N/A) --- */
     div[data-testid="stHorizontalBlock"] button {
         width: 100% !important;
         height: 115px !important;
@@ -716,70 +509,27 @@ st.markdown("""
         border-radius: 22px !important;
         color: #FFFFFF !important;
         border: none !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
-        transition: all 0.15s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        animation: none !important; /* No global pulse glow */
-        transform: none !important;
-    }
-    div[data-testid="stHorizontalBlock"] button::before {
-        display: none !important; /* No shimmer */
     }
 
-    /* 🟢 BOUTON OUI (Vert Émeraude Néon) */
     div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
         background: linear-gradient(135deg, #10B981, #059669) !important;
         border-bottom: 8px solid #047857 !important;
         box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2) !important;
-        transform: translateY(-4px) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover {
-        filter: brightness(1.15) !important;
-        transform: translateY(-8px) !important;
-        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.45) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button:active {
-        border-bottom: 2px solid #047857 !important;
-        transform: translateY(2px) !important;
-        box-shadow: 0 3px 6px rgba(16, 185, 129, 0.1) !important;
     }
 
-    /* 🔴 BOUTON NON (Rouge Signal Laser) */
     div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {
         background: linear-gradient(135deg, #EF4444, #DC2626) !important;
         border-bottom: 8px solid #B91C1C !important;
         box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
-        transform: translateY(-4px) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button:hover {
-        filter: brightness(1.15) !important;
-        transform: translateY(-8px) !important;
-        box-shadow: 0 15px 30px rgba(239, 68, 68, 0.45) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button:active {
-        border-bottom: 2px solid #B91C1C !important;
-        transform: translateY(2px) !important;
-        box-shadow: 0 3px 8px rgba(239, 68, 68, 0.1) !important;
     }
 
-    /* 🔵 BOUTON N/A (Bleu Slate Électrique) */
     div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
         background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
         border-bottom: 8px solid #1E40AF !important;
         box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
-        transform: translateY(-4px) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button:hover {
-        filter: brightness(1.15) !important;
-        transform: translateY(-8px) !important;
-        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.45) !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button:active {
-        border-bottom: 2px solid #1E40AF !important;
-        transform: translateY(2px) !important;
-        box-shadow: 0 3px 6px rgba(59, 130, 246, 0.1) !important;
     }
 
-    /* --- BOUTONS EN COULOIR POUR LE RETOUR OU LE RESET (SÉLECTEUR ADJACENT ET CONTENEUR) --- */
+    /* --- BOUTON RETOUR --- */
     .back-btn-container + .stButton button,
     .back-btn-container + div.stButton button,
     .back-btn-container button {
@@ -787,23 +537,13 @@ st.markdown("""
         color: #94A3B8 !important;
         border: 2px solid #475569 !important;
         border-bottom: none !important;
-        height: 55px !important;
+        height: 60px !important;
         font-size: 18px !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
         box-shadow: none !important;
-        animation: none !important;
-        transform: none !important;
-    }
-    .back-btn-container + .stButton button:hover,
-    .back-btn-container + div.stButton button:hover,
-    .back-btn-container button:hover {
-        background-color: rgba(148, 163, 184, 0.1) !important;
-        color: #F8FAFC !important;
-        border-color: #94A3B8 !important;
     }
 
-    /* --- BOUTON CHANGER D'UTILISATEUR (RELAXÉ ET PETIT) --- */
     .small-btn-container + .stButton button,
     .small-btn-container + div.stButton button,
     .small-btn-container button {
@@ -812,283 +552,198 @@ st.markdown("""
         font-weight: 700 !important;
         border-radius: 10px !important;
         border-bottom: 3px solid #0B1329 !important;
-        box-shadow: none !important;
-        animation: none !important;
-        transform: none !important;
-        letter-spacing: 0px !important;
         background: #1E293B !important;
-    }
-    .small-btn-container + .stButton button::before,
-    .small-btn-container button::before {
-        display: none !important;
-    }
-
-    /* ========================================== DOUBLE PORTE CINÉMATIQUE 3D EXTREME ========================================== */
-    .portal-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 999999;
-        pointer-events: none;
-        display: flex;
-        perspective: 1200px;
-    }
-    .portal-door {
-        width: 50vw;
-        height: 100vh;
-        background: linear-gradient(135deg, #0E529E, #0F172A) !important;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 1.8s cubic-bezier(0.85, 0, 0.15, 1);
-        border: 12px solid #1E293B;
-        box-shadow: inset 0 0 100px rgba(0,0,0,0.85);
-    }
-    .portal-door-left {
-        border-right: 6px solid #38BDF8;
-        transform-origin: left center;
-        animation: openLeftDoor 2.2s cubic-bezier(0.85, 0, 0.15, 1) forwards;
-    }
-    .portal-door-right {
-        border-left: 6px solid #38BDF8;
-        transform-origin: right center;
-        animation: openRightDoor 2.2s cubic-bezier(0.85, 0, 0.15, 1) forwards;
-    }
-    
-    /* Rivets de tôle industriels */
-    .portal-door::after {
-        content: "•  •  •  •  •  •  •";
-        position: absolute;
-        font-size: 32px;
-        color: rgba(56, 189, 248, 0.35);
-        letter-spacing: 22px;
-    }
-    .portal-door-left::after { right: 25px; writing-mode: vertical-rl; }
-    .portal-door-right::after { left: 25px; writing-mode: vertical-rl; }
-
-    @keyframes openLeftDoor {
-        0% { transform: translateX(0) rotateY(0deg) scale(1); opacity: 1; }
-        20% { transform: translateX(0) rotateY(-6deg) scale(0.98); opacity: 1; } /* Recul mécanique */
-        100% { transform: translateX(-105%) rotateY(-95deg) scale(0.9); opacity: 0; visibility: hidden; }
-    }
-    @keyframes openRightDoor {
-        0% { transform: translateX(0) rotateY(0deg) scale(1); opacity: 1; }
-        20% { transform: translateX(0) rotateY(6deg) scale(0.98); opacity: 1; }
-        100% { transform: translateX(105%) rotateY(95deg) scale(0.9); opacity: 0; visibility: hidden; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Affichage permanent du titre principal extrudé et flottant 3D
+# Affichage permanent du titre principal extrudé 3D
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
 
-# Affichage du badge de Test si actif
-if st.session_state.test_mode:
+if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== EFFET CINÉMATIQUE PORTE DOUBLE (WAHOU ENTRÉE)
-if st.session_state.user_authenticated and not st.session_state.portal_shown:
-    st.markdown("""
-    <div class="portal-container">
-        <!-- PORTAL DOOR LEFT -->
-        <div class="portal-door portal-door-left">
-            <div style="text-align: center; color: #FFFFFF !important; font-family: 'Playfair Display', serif;">
-                <span style="font-size: 7.5rem; display: block; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6));">⚙️</span>
-                <span style="font-size: 3.5rem; font-weight: 900; letter-spacing: 4px; display: block; color: #FFFFFF !important;">MASSILLY</span>
-                <span style="font-size: 1.25rem; color: #38BDF8 !important; letter-spacing: 6px; font-weight: bold; text-transform: uppercase;">MÉTAL INDUSTRIE</span>
-            </div>
-        </div>
-        <!-- PORTAL DOOR RIGHT -->
-        <div class="portal-door portal-door-right">
-            <div style="text-align: center; color: #FFFFFF !important; font-family: 'Playfair Display', serif;">
-                <span style="font-size: 7.5rem; display: block; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6));">📦</span>
-                <span style="font-size: 3.5rem; font-weight: 900; letter-spacing: 4px; display: block; color: #FFFFFF !important;">EXCELLENCE</span>
-                <span style="font-size: 1.25rem; color: #38BDF8 !important; letter-spacing: 6px; font-weight: bold; text-transform: uppercase;">LOGISTIQUE 5S</span>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    st.session_state.portal_shown = True
-
-
-# ========================================== ÉCRAN 1 : PROCESSUS D'IDENTIFICATION MULTI-ÉTAPES
-if not st.session_state.user_authenticated:
-    step = st.session_state.get("auth_step", 0)
+# ========================================== ÉCRAN 1 : CONNEXION MULTI-ÉTAPES (ETAPES 1 à 4)
+if not st.session_state.get("user_authenticated", False):
+    auth_step = st.session_state.get("auth_step", 1)
     
-    # --------------------------------------------------------------------------
-    # ÉTAPE 0 : PAGE D'ACCUEIL AVEC ACCÈS AU PORTAIL
-    # --------------------------------------------------------------------------
-    if step == 0:
-        st.markdown("<div class='user-id-badge-3d-btn'>", unsafe_allow_html=True)
-        if st.button("📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR", use_container_width=True, key="btn_enter_portal"):
-            st.session_state.auth_step = 1
+    # ÉTAPE 1 : ACCUEIL PRESTIGE AVEC BADGE CLIQUABLE ET GROS LOGO 5S FLOTTANT
+    if auth_step == 1:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
+        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+        if st.button("🚀 CLIQUER ICI POUR VOUS IDENTIFIER", use_container_width=True):
+            st.session_state.auth_step = 2
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # --------------------------------------------------------------------------
-    # ÉTAPE 1 : CHOIX DU RÔLE (SPONSOR DE ZONE, RÉFÉRENT 5S, ADMINISTRATEUR)
-    # --------------------------------------------------------------------------
-    elif step == 1:
+        
+        # GROS LOGO 5S FLOTTANT 3D EN DESSOUS (POUR FAIRE JOLI SUR LA PAGE D'ACCUEIL)
+        st.markdown("""
+        <div class='logo-5s-3d-floating'>
+            <div class='logo-5s-3d-text'>✨ 5S ✨</div>
+            <div style='font-size: 1.4rem; font-weight: 800; color: #38BDF8; letter-spacing: 5px; text-transform: uppercase; margin-top: 15px;'>
+                SEIRI • SEITON • SEISO • SEIKETSU • SHITSUKE
+            </div>
+            <div style='font-size: 1.1rem; color: #94A3B8; margin-top: 10px; font-weight: 600;'>
+                MÉTHODE D'EXCELLENCE OPÉRATIONNELLE LOGISTIQUE MASSILLY
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    # ÉTAPE 2 : CHOIX DU RÔLE
+    elif auth_step == 2:
         st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 20px; font-weight: bold;'>Choisissez votre profil d'accès :</p>", unsafe_allow_html=True)
         
         col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("🎯\n\nSponsor de zone", use_container_width=True, key="btn_role_sponsor"):
-                st.session_state.selected_role = "Sponsor de zone"
-                st.session_state.auth_step = 2
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-        with col_r2:
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("🔍\n\nRéférent 5S", use_container_width=True, key="btn_role_referent"):
-                st.session_state.selected_role = "Référent 5S"
-                st.session_state.auth_step = 2
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-        with col_r3:
-            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-            if st.button("⚙️\n\nAdministrateur", use_container_width=True, key="btn_role_admin"):
-                st.session_state.selected_role = "Administrateur"
-                st.session_state.auth_step = 2
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
-        if st.button("⬅️ Retour à l'accueil", use_container_width=True, key="back_to_0"):
-            st.session_state.auth_step = 0
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # --------------------------------------------------------------------------
-    # ÉTAPE 2 : SÉLECTION DU SPONSOR OU DU NOM
-    # --------------------------------------------------------------------------
-    elif step == 2:
-        role_label = st.session_state.get("selected_role", "Sponsor de zone")
-        st.markdown(f"<div class='user-id-badge-3d'>👤 SÉLECTION DU NOM ({role_label.upper()})</div>", unsafe_allow_html=True)
-        
-        if role_label == "Sponsor de zone":
-            personnes_massilly = [
-                "Audrey Sordet (Sponsor Z1 - Filmeuse & Quais)",
-                "Anthony Duplessis (Sponsor Z2 - Bureaux Expédition)",
-                "Jonathan Mele (Sponsor Z3 - Quai Chargement)",
-                "Thomas Collin (Sponsor Z4 - Préparation Commande)",
-                "Gaspard Sommereux (Sponsor Z5 - Emplacements Boîtes)",
-                "Mariia Leliukh (Sponsor Z6 - Palettier)",
-                "Céline Hereng (Sponsor Z7 - Réception MP)",
-                "Dimitri Dupasquier (Sponsor Z8 - Stockage Métal)",
-                "Frédéric Bouvy (Sponsor Z9 - Local Joint)",
-                "Nathalie Berthelin (Sponsor Z10 - Produits Dangereux)",
-                "Labbé Damien (Alternant)",
-                "Autre (Saisie manuelle)..."
-            ]
-        elif role_label == "Référent 5S":
-            personnes_massilly = [
-                "Labbé Damien (Alternant / Référent)",
-                "Référent Logistique Usine",
-                "Autre (Saisie manuelle)..."
-            ]
-        else:
-            personnes_massilly = [
-                "Labbé Damien (Administrateur)",
-                "Administrateur Système",
-                "Autre (Saisie manuelle)..."
-            ]
-            
-        nom_select = st.selectbox("Sélectionnez votre Prénom & Nom :", personnes_massilly)
-        
-        if nom_select == "Autre (Saisie manuelle)...":
-            nom_complet = st.text_input("Saisissez votre Prénom et Nom :")
-        else:
-            nom_complet = nom_select.split(" (")[0]
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("CONTINUER VERS LE CHOIX DE ZONE ➡️", use_container_width=True, key="go_to_zone"):
-            if not nom_complet.strip():
-                st.error("Veuillez renseigner votre nom pour continuer.")
-            else:
-                st.session_state.selected_name = nom_complet
+            if st.button("🎯 Sponsor de zone", use_container_width=True):
+                st.session_state.user_role = "Sponsor de zone"
                 st.session_state.auth_step = 3
                 st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
-        if st.button("⬅️ Retour au choix du rôle", use_container_width=True, key="back_to_1"):
+        with col_r2:
+            if st.button("🔍 Référent 5S", use_container_width=True):
+                st.session_state.user_role = "Référent 5S"
+                st.session_state.auth_step = 3
+                st.rerun()
+        with col_r3:
+            if st.button("⚙️ Administrateur", use_container_width=True):
+                st.session_state.user_role = "Éditeur (Méthodes / Alternant)"
+                st.session_state.auth_step = 3
+                st.rerun()
+                
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour à l'accueil", use_container_width=True):
             st.session_state.auth_step = 1
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # --------------------------------------------------------------------------
-    # ÉTAPE 3 : CHOIX DE LA ZONE LOGISTIQUE CIBLÉE ET VALIDATION FINALE
-    # --------------------------------------------------------------------------
-    elif step == 3:
-        st.markdown("<div class='user-id-badge-3d'>📍 ZONE LOGISTIQUE CIBLÉE</div>", unsafe_allow_html=True)
         
-        st.info(f"👤 **Profil configuré :** {st.session_state.get('selected_name', '')} ({st.session_state.get('selected_role', '')})")
+    # ÉTAPE 3 : CHOIX DU NOM SELON LE RÔLE (ÉPURÉ PAR PRÉNOM SEUL / PRÉNOM N.)
+    elif auth_step == 3:
+        st.markdown("<div class='user-id-badge-3d'>👤 SÉLECTION DU NOM</div>", unsafe_allow_html=True)
+        
+        PERSONNES_MASSILLY_RAW = [
+            {"prenom": "Damien", "nom": "Labbé", "full": "Damien Labbé"},
+            {"prenom": "Audrey", "nom": "Sordet", "full": "Audrey Sordet"},
+            {"prenom": "Anthony", "nom": "Duplessis", "full": "Anthony Duplessis"},
+            {"prenom": "Jonathan", "nom": "Mele", "full": "Jonathan Mele"},
+            {"prenom": "Thomas", "nom": "Collin", "full": "Thomas Collin"},
+            {"prenom": "Gaspard", "nom": "Sommereux", "full": "Gaspard Sommereux"},
+            {"prenom": "Mariia", "nom": "Leliukh", "full": "Mariia Leliukh"},
+            {"prenom": "Céline", "nom": "Hereng", "full": "Céline Hereng"},
+            {"prenom": "Dimitri", "nom": "Dupasquier", "full": "Dimitri Dupasquier"},
+            {"prenom": "Frédéric", "nom": "Bouvy", "full": "Frédéric Bouvy"},
+            {"prenom": "Nathalie", "nom": "Berthelin", "full": "Nathalie Berthelin"}
+        ]
+        
+        counts_prenom = {}
+        for p in PERSONNES_MASSILLY_RAW:
+            counts_prenom[p["prenom"]] = counts_prenom.get(p["prenom"], 0) + 1
+            
+        options_map = {}
+        options_liste = []
+        for p in PERSONNES_MASSILLY_RAW:
+            if counts_prenom[p["prenom"]] > 1:
+                disp = f"{p['prenom']} {p['nom'][0]}."
+            else:
+                disp = p["prenom"]
+            options_map[disp] = p["full"]
+            options_liste.append(disp)
+            
+        options_liste.append("Autre (Saisie manuelle)...")
+        
+        nom_select = st.selectbox("Sélectionnez votre Prénom :", options_liste)
+        if nom_select == "Autre (Saisie manuelle)...":
+            nom_complet = st.text_input("Saisissez votre Prénom et Nom :")
+        else:
+            nom_complet = options_map.get(nom_select, nom_select)
+            
+        col_n1, col_n2 = st.columns(2)
+        with col_n1:
+            st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+            if st.button("⬅️ Retour au choix du rôle", use_container_width=True):
+                st.session_state.auth_step = 2
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+        with col_n2:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("CONTINUER VERS LE CHOIX DE ZONE ➡️", use_container_width=True):
+                if not nom_complet.strip():
+                    st.error("Veuillez renseigner votre nom.")
+                else:
+                    st.session_state.user_name = nom_complet
+                    st.session_state.auth_step = 4
+                    st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+    # ÉTAPE 4 : SÉLECTION DE LA ZONE & CONFIGURATION
+    elif auth_step == 4:
+        st.markdown("<div class='user-id-badge-3d'>📍 ZONE LOGISTIQUE CIBLÉE</div>", unsafe_allow_html=True)
+        st.info(f"Profil configuré : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
         
         liste_zones = list(ZONES_MASSILLY.keys())
         zone_select = st.selectbox(
-            "Sélectionnez la zone logistique ciblée :",
+            "Zone logistique ciblée :",
             liste_zones,
             format_func=lambda x: ZONES_MASSILLY[x]["label"]
         )
         
         st.markdown("---")
-        st.markdown("### Configuration de la base de données")
+        st.markdown("### Configuration & Test GSheets")
         st.session_state.test_mode = st.checkbox(
-            "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
+            "🧪 Activer le MODE TEST d'entraînement",
             value=st.session_state.get("test_mode", False)
         )
         
-        # Bouton de test rapide Google Sheets
-        if st.button("🔌 TESTER CONNEXION GOOGLE SHEETS", use_container_width=True, key="btn_test_gsheets_step3"):
-            conn = get_gsheets_connection()
-            if conn is not None:
-                try:
-                    df_test = conn.read(ttl=0)
-                    st.success("✅ Connexion Google Sheets fonctionnelle et synchronisée !")
-                except Exception as e_test:
-                    st.error(f"⚠️ Échec de connexion : {e_test}")
+        if st.button("🔌 TESTER CONNEXION GOOGLE SHEETS", use_container_width=True):
+            ok, err = sauvegarder_audit_local({
+                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "Zone": "TEST_CONNEXION",
+                "Sponsor": "SYSTEM",
+                "Auditeur": st.session_state.get('user_name', 'TEST'),
+                "Role": st.session_state.get('user_role', 'TEST'),
+                "Score_Total": 15,
+                "Pourcentage": 100,
+                "Observations": "Test automatique de connexion depuis l'écran d'accueil",
+                "Actions_Correctives": "Aucune"
+            })
+            if ok:
+                st.success("✅ Connexion Google Sheets fonctionnelle ! L'audit de test a été enregistré.")
             else:
-                st.error("⚠️ La connexion Google Sheets n'est pas initialisée. Vérifiez les secrets.")
-        
+                st.error(f"❌ Échec de connexion : {err}")
+                
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🔓 COMMENCER LE DIAGNOSTIC DE ZONE", use_container_width=True, key="btn_auth_finish"):
-            st.session_state.user_role = st.session_state.get("selected_role", "Sponsor de zone")
-            st.session_state.user_name = st.session_state.get("selected_name", "Utilisateur")
-            st.session_state.user_zone = zone_select
-            st.session_state.user_authenticated = True
-            st.session_state.portal_shown = False
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
-        if st.button("⬅️ Retour à la sélection du nom", use_container_width=True, key="back_to_2"):
-            st.session_state.auth_step = 2
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        col_z1, col_z2 = st.columns(2)
+        with col_z1:
+            st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+            if st.button("⬅️ Retour au choix du nom", use_container_width=True):
+                st.session_state.auth_step = 3
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+        with col_z2:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("🔓 COMMENCER LE DIAGNOSTIC DE ZONE", use_container_width=True):
+                st.session_state.user_zone = zone_select
+                st.session_state.user_authenticated = True
+                st.session_state.auth_step = 1
+                st.session_state.portal_shown = False
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================== APPLICATION PRINCIPALE (UTILISATEUR CONNECTÉ)
 else:
-    # Bandeau supérieur d'information de session
     col_u1, col_u2 = st.columns([4, 1])
     with col_u1:
         st.markdown(
-            f"👤 **{st.session_state.user_name}** ({st.session_state.user_role}) | Zone active : **{ZONES_MASSILLY[st.session_state.user_zone]['label']}**"
+            f"👤 **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')}) | Zone active : **{ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['label']}**"
         )
     with col_u2:
         st.markdown("<div class='small-btn-container'>", unsafe_allow_html=True)
         if st.button("🔄 Changer d'utilisateur", use_container_width=True):
             st.session_state.user_authenticated = False
-            st.session_state.auth_step = 0
+            st.session_state.auth_step = 1
             st.session_state.audit_started = False
             st.session_state.current_q_idx = 0
             st.session_state.answers = {}
@@ -1098,7 +753,6 @@ else:
             
     st.markdown("---")
 
-    # Onglets horizontaux de navigation (Relookés en boutons command-plates 3D par CSS)
     onglets = ["📋 Saisie d'Audit terrain", "📊 Analyse & Historique", "🗺️ Rappel des Standards"]
     menu_actif = st.radio("Menu principal :", onglets, horizontal=True, key="menu_actif")
 
@@ -1107,30 +761,27 @@ else:
     # ========================================== ONGLET 1 : SAISIE D'AUDIT COMPORTEMENTAL
     if menu_actif == "📋 Saisie d'Audit terrain":
         
-        # Étape 1 : Proposition de départ de l'audit (AVEC MASTER CARD BOUTON 3D COMBINÉ)
-        if not st.session_state.audit_started:
+        if not st.session_state.get("audit_started", False):
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
-            # Les deux textes fusionnés dans un bouton-carte géant de niveau Prestige avec la fusée rotative intégrée par CSS
-            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.user_zone]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.user_zone]['sponsor']}"
+            zone_key = st.session_state.get('user_zone', 'Zone 1')
+            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[zone_key]['label']}\nSponsor Responsable : {ZONES_MASSILLY[zone_key]['sponsor']}"
             if st.button(btn_label, use_container_width=True):
                 st.session_state.audit_started = True
                 st.session_state.current_q_idx = 0
                 st.session_state.answers = {}
+                st.session_state.audit_saved = False
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
             
-        # Étape 2 : Déroulement de l'audit critère par critère
         else:
-            idx = st.session_state.current_q_idx
+            idx = st.session_state.get("current_q_idx", 0)
             
             if idx < 15:
                 crit = CRITERES_OFFICIELS[idx]
                 
-                # Progression
                 st.progress(idx / 15)
                 st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Critère {idx+1} sur 15</p>", unsafe_allow_html=True)
                 
-                # CARTE DU CRITÈRE 3D (Contraste maximal noir sur blanc)
                 st.markdown(f"""
                 <div class="question-card">
                     <div class="question-cat">{crit['cat']}</div>
@@ -1140,7 +791,6 @@ else:
                 
                 st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 15px;'>Valider l'état sur le terrain :</p>", unsafe_allow_html=True)
                 
-                # 3 Boutons géants de vote tactile 3D
                 col_o, col_n, col_na = st.columns(3)
                 with col_o:
                     if st.button("🟢 OUI", use_container_width=True, key=f"btn_o_{idx}"):
@@ -1158,7 +808,6 @@ else:
                         st.session_state.current_q_idx += 1
                         st.rerun()
                 
-                # --- RETOUR EN ARRIÈRE (Centré sous les boutons) ---
                 if idx > 0:
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
@@ -1167,144 +816,122 @@ else:
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-            # Étape 3 : Fin d'audit et écran de synthèse
             else:
-                st.success("🎉 Évaluation terminée !")
-                st.subheader("Synthèse de l'évaluation")
-                
-                # Calculs des scores
-                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                t_app = 15 - t_na
-                
-                score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                
-                # Score d'affichage (Métriques 3D flottantes)
-                col_s1, col_s2 = st.columns(2)
-                with col_s1:
-                    st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
-                with col_s2:
-                    st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                
-                st.markdown("### 📝 Observations terrain")
-                obs = st.text_area("Remarques / Anomalies constatées :")
-                act = st.text_area("Plan d'action corrective :")
-                
-                # Récapitulatif
-                with st.expander("🔎 Afficher le récapitulatif détaillé"):
-                    for c in CRITERES_OFFICIELS:
-                        rep = st.session_state.answers.get(c["id"], "N/A")
-                        bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
-                        st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
-                
-                # Actions de validation finales (Le bouton d'enregistrement hérite du style prestige 3D)
-                st.markdown("<br>", unsafe_allow_html=True)
-                col_end1, col_end2 = st.columns(2)
-                with col_end1:
-                    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                    if st.button("❌ Réinitialiser l'audit", use_container_width=True):
-                        st.session_state.audit_started = False
-                        st.session_state.current_q_idx = 0
-                        st.session_state.answers = {}
-                        st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                with col_end2:
+                if st.session_state.get("audit_saved", False):
+                    st.balloons()
+                    if st.session_state.get("save_result_ok", False):
+                        st.success("🎉 DIAGNOSTIC ENREGISTRÉ ET SYNCHRONISÉ EN TEMPS RÉEL DANS GOOGLE SHEETS !")
+                    else:
+                        st.warning(f"⚠️ Diagnostic enregistré localement (Google Sheets offline : {st.session_state.get('save_result_err', '')})")
+                        
+                    st.subheader("Synthèse enregistrée")
+                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
+                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                    t_app = 15 - t_na
+                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
+                    
+                    c_res1, c_res2 = st.columns(2)
+                    with c_res1:
+                        st.metric("Critères Conformités", f"{t_oui} / {t_app}")
+                    with c_res2:
+                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
+                        
+                    st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                    if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                        # Enregistrement
-                        sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
-                        
-                        row_data = {
-                            "Date": datetime.now().strftime("%Y-%m-%d"),
-                            "Zone": st.session_state.user_zone,
-                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
-                            "Auditeur": st.session_state.user_name,
-                            "Role": st.session_state.user_role,
-                            "Score_Total": t_oui,
-                            "Pourcentage": score_final_pct,
-                            "Observations": obs,
-                            "Actions_Correctives": act
-                        }
-                        row_data.update(sc_num)
-                        
-                        synced_gsheets = sauvegarder_audit_local(row_data)
-                        
-                        if synced_gsheets:
-                            st.success("✅ Enregistrement effectué avec succès dans Google Sheets et synchronisé en temps réel !")
-                        else:
-                            st.success(f"✅ Enregistrement effectué avec succès dans le fichier {SHARED_DATA_FILE} !")
-                        st.balloons()
-                        
+                    if st.button("🚀 COMMENCER UN NOUVEL AUDIT 5S", use_container_width=True):
                         st.session_state.audit_started = False
+                        st.session_state.audit_saved = False
                         st.session_state.current_q_idx = 0
                         st.session_state.answers = {}
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
+                    
+                else:
+                    st.success("🎉 Évaluation terminée !")
+                    st.subheader("Synthèse de l'évaluation")
+                    
+                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
+                    t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
+                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                    t_app = 15 - t_na
+                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
+                    
+                    col_s1, col_s2 = st.columns(2)
+                    with col_s1:
+                        st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
+                    with col_s2:
+                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
+                    
+                    st.markdown("### 📝 Observations terrain")
+                    obs = st.text_area("Remarques / Anomalies constatées :")
+                    act = st.text_area("Plan d'action corrective :")
+                    
+                    with st.expander("🔎 Afficher le récapitulatif détaillé"):
+                        for c in CRITERES_OFFICIELS:
+                            rep = st.session_state.answers.get(c["id"], "N/A")
+                            bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
+                            st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_end1, col_end2 = st.columns(2)
+                    with col_end1:
+                        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                        if st.button("❌ Réinitialiser l'audit", use_container_width=True):
+                            st.session_state.audit_started = False
+                            st.session_state.current_q_idx = 0
+                            st.session_state.answers = {}
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
+                    with col_end2:
+                        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                        if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
+                            sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
+                            zone_key = st.session_state.get('user_zone', 'Zone 1')
+                            
+                            row_data = {
+                                "Date": datetime.now().strftime("%Y-%m-%d"),
+                                "Zone": zone_key,
+                                "Sponsor": ZONES_MASSILLY[zone_key]["sponsor"],
+                                "Auditeur": st.session_state.get('user_name', ''),
+                                "Role": st.session_state.get('user_role', ''),
+                                "Score_Total": t_oui,
+                                "Pourcentage": score_final_pct,
+                                "Observations": obs,
+                                "Actions_Correctives": act
+                            }
+                            row_data.update(sc_num)
+                            
+                            synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
+                            st.session_state.audit_saved = True
+                            st.session_state.save_result_ok = synced_gsheets
+                            st.session_state.save_result_err = err_msg
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
 
-    # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE (KPIs 3D)
+    # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE
     elif menu_actif == "📊 Analyse & Historique":
         st.subheader("Historique d'Amélioration Continue")
-        
         df = charger_audits()
-        
         if df.empty or len(df) == 0:
             st.warning("Aucune donnée enregistrée dans ce mode d'accès.")
         else:
             tot = len(df)
-            moy = int(df["Pourcentage"].mean())
-            last_row = df.iloc[-1]
-            
-            # 3 Métriques en boites 3D en suspension
-            k_1, k_2, k_3 = st.columns(3)
+            moy = int(df["Pourcentage"].mean()) if "Pourcentage" in df.columns else 0
+            k_1, k_2 = st.columns(2)
             with k_1:
                 st.metric("Audits Complétés", tot)
             with k_2:
-                st.metric("Performance Moyenne", f"{moy} %")
-            with k_3:
-                st.metric("Dernière Zone Évaluée", f"{last_row['Zone']} ({last_row['Pourcentage']}%)\"")
-                
-            st.markdown("### Journal d'activité (Données du fichier CSV)")
-            champs = ["Date", "Zone", "Sponsor", "Auditeur", "Role", "Score_Total", "Pourcentage", "Observations", "Actions_Correctives"]
-            st.dataframe(df[champs].sort_values(by="Date", ascending=False), use_container_width=True)
+                st.metric("Moyenne Globale 5S", f"{moy} %")
+            st.markdown("### Historique des audits")
+            st.dataframe(df, use_container_width=True)
 
-            try:
-                df_c = df.pivot_table(index="Date", columns="Zone", values="Pourcentage", aggfunc='last').ffill()
-                st.markdown("### Courbes de Progrès par Zone")
-                st.line_chart(df_c)
-            except Exception:
-                pass
-
-    # ========================================== ONGLET 3 : RAPPEL DES CODES DE L'USINE MASSILLY
+    # ========================================== ONGLET 3 : RAPPEL DES STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
-        st.subheader("Les Impératifs Physiques et Visuels de Massilly")
-        
-        col_st1, col_st2 = st.columns(2)
-        with col_st1:
-            # Plaque blanche 3D de rappel standard
-            st.markdown("""
-            <div class="question-card" style="border-left-color: #EF4444 !important;">
-                <h4 style="color: #EF4444 !important; font-weight: 800; margin-bottom: 12px;">🟥 Le Code de Couleur au Sol (Standard Massilly)</h4>
-                <p style="color: #0F172A !important; font-size: 1.1rem; line-height: 1.5;">
-                    • <b>Zones de blocage et anomalies</b> : Doivent obligatoirement être peintes ou entourées de bandes <b>ROUGES</b> au sol (ex: <i>Zone Anomalie Boîtes</i>).<br>
-                    • <b>Condition Obligatoire</b> : Toute palette déposée dans cette zone rouge de blocage doit <b>obligatoirement posséder une feuille d'identification bleue</b> complétée et scotchée de manière visible.<br>
-                    • <b>Aires AGV / Chariots</b> : Tracées obligatoirement en <b>ROUGE VIF</b> pour la sécurité du personnel.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        with col_st2:
-            st.markdown("""
-            <div class="question-card" style="border-left-color: #3B82F6 !important;">
-                <h4 style="color: #0E529E !important; font-weight: 800; margin-bottom: 12px;">⬜ Tracés pour Accessoires de Conditionnement</h4>
-                <p style="color: #0F172A !important; font-size: 1.1rem; line-height: 1.5;">
-                    • <b>Matériels Mobiles et Outils</b> : Matérialisés au sol par un marquage de couleur <b>BLANCHE</b> (bac à cornières de Lucien Lefebvre, kit de cerclage, table de préparation, etc.).<br>
-                    • <b>Stations de propreté</b> : Les 21 stations mobiles Seton acquises par Massilly doivent être garées dans leurs emplacements blancs de propreté à chaque fin de poste.<br>
-                    • <b>Règle d'or</b> : Remettre tous les outils de balayage, pelles et consommables dans leurs stations prévues.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        st.markdown("---")
-        st.markdown("#### Plan de Responsabilité Officiel des 10 Zones")
-        for k, v in ZONES_MASSILLY.items():
-            st.markdown(f"📍 **{k}** : {v['label']} — **Sponsor officiel de zone** : `{v['sponsor']}`")
+        st.subheader("Les 5 Étapes du Standard 5S Massilly")
+        st.markdown("""
+        - **1. Seiri (Trier)** : Supprimer l'inutile du poste de travail.
+        - **2. Seiton (Ranger)** : Une place pour chaque chose, chaque chose à sa place.
+        - **3. Seiso (Nettoyer)** : Nettoyer c'est inspecter et détecter les anomalies.
+        - **4. Seiketsu (Standardiser)** : Formaliser les règles et les méthodes visuelles.
+        - **5. Shitsuke (Maintenir)** : Ancrer la rigueur et réaliser les rituels d'audit.
+        """)
