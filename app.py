@@ -720,6 +720,70 @@ button[aria-label*="Zone 10"], div[data-testid="stButton"] button[aria-label*="Z
 }
 
 
+
+    /* ========================================== MARKEUR DÉDIÉ COULEURS BOYS / GIRLS / ZONES ========================================== */
+    /* GARÇONS : BLEU OCÉAN & CYAN NÉON IMPÉRIAL */
+    div:has(.boy-marker) + div button,
+    div:has(.boy-marker) + div div[data-testid="stButton"] button {
+        background: linear-gradient(135deg, #0284C7 0%, #1E3A8A 100%) !important;
+        border: 3px solid #38BDF8 !important;
+        border-bottom: 7px solid #0369A1 !important;
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.5) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+    }
+    div:has(.boy-marker) + div button:hover,
+    div:has(.boy-marker) + div div[data-testid="stButton"] button:hover {
+        transform: translateY(-4px) scale(1.02) !important;
+        box-shadow: 0 15px 35px rgba(56, 189, 248, 0.8) !important;
+        border-color: #7DD3FC !important;
+    }
+
+    /* FILLES : ROSE MAGENTA FLUO & FUCHSIA PRESTIGE */
+    div:has(.girl-marker) + div button,
+    div:has(.girl-marker) + div div[data-testid="stButton"] button {
+        background: linear-gradient(135deg, #BE185D 0%, #DB2777 50%, #F472B6 100%) !important;
+        border: 3px solid #F472B6 !important;
+        border-bottom: 7px solid #9D174D !important;
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(219, 39, 119, 0.5) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+    }
+    div:has(.girl-marker) + div button:hover,
+    div:has(.girl-marker) + div div[data-testid="stButton"] button:hover {
+        transform: translateY(-4px) scale(1.02) !important;
+        box-shadow: 0 15px 35px rgba(244, 114, 182, 0.8) !important;
+        border-color: #FBCFE8 !important;
+    }
+
+    /* ZONES 1 À 10 : SPECTRE DE DÉGRADÉ CONTINU */
+    div:has(.zone-marker-0) + div button { background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important; border: 3px solid #38BDF8 !important; border-bottom: 7px solid #075985 !important; }
+    div:has(.zone-marker-1) + div button { background: linear-gradient(135deg, #0284C7 0%, #0D9488 100%) !important; border: 3px solid #2DD4BF !important; border-bottom: 7px solid #0F766E !important; }
+    div:has(.zone-marker-2) + div button { background: linear-gradient(135deg, #0D9488 0%, #059669 100%) !important; border: 3px solid #34D399 !important; border-bottom: 7px solid #047857 !important; }
+    div:has(.zone-marker-3) + div button { background: linear-gradient(135deg, #059669 0%, #16A34A 100%) !important; border: 3px solid #4ADE80 !important; border-bottom: 7px solid #15803D !important; }
+    div:has(.zone-marker-4) + div button { background: linear-gradient(135deg, #16A34A 0%, #CA8A04 100%) !important; border: 3px solid #FACC15 !important; border-bottom: 7px solid #A16207 !important; }
+    div:has(.zone-marker-5) + div button { background: linear-gradient(135deg, #CA8A04 0%, #EA580C 100%) !important; border: 3px solid #FB923C !important; border-bottom: 7px solid #C2410C !important; }
+    div:has(.zone-marker-6) + div button { background: linear-gradient(135deg, #EA580C 0%, #E11D48 100%) !important; border: 3px solid #FB7185 !important; border-bottom: 7px solid #BE123C !important; }
+    div:has(.zone-marker-7) + div button { background: linear-gradient(135deg, #E11D48 0%, #C026D3 100%) !important; border: 3px solid #E879F9 !important; border-bottom: 7px solid #A21CAF !important; }
+    div:has(.zone-marker-8) + div button { background: linear-gradient(135deg, #C026D3 0%, #9333EA 100%) !important; border: 3px solid #C084FC !important; border-bottom: 7px solid #7E22CE !important; }
+    div:has(.zone-marker-9) + div button { background: linear-gradient(135deg, #9333EA 0%, #4C1D95 100%) !important; border: 3px solid #A855F7 !important; border-bottom: 7px solid #3B0764 !important; }
+
+    div[class*="zone-marker-"] + div button {
+        height: 75px !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        border-radius: 18px !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -837,18 +901,18 @@ if not st.session_state.get("user_authenticated", False):
             {"prenom": "Nathalie", "full": "Nathalie Berthelin", "icon": "🛡️", "gender": "girl"}
         ]
 
+        # Grille 2 colonnes tactile de badges
         col_p1, col_p2 = st.columns(2)
         for idx, p in enumerate(PERSONNES_BADGES):
             target_col = col_p1 if idx % 2 == 0 else col_p2
-            card_cls = "boy-card" if p["gender"] == "boy" else "girl-card"
+            marker_cls = "boy-marker" if p["gender"] == "boy" else "girl-marker"
             with target_col:
-                st.markdown(f"<div class='{card_cls}'>", unsafe_allow_html=True)
+                st.markdown(f"<div class='{marker_cls}'></div>", unsafe_allow_html=True)
                 lbl = f"{p['icon']}  {p['prenom']}"
                 if st.button(lbl, key=f"p_badge_{idx}", use_container_width=True):
                     st.session_state.user_name = p['full']
                     st.session_state.auth_step = 3
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
@@ -857,36 +921,35 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ÉTAPE 3 : SÉLECTION DE LA ZONE (NOM SEUL DE LA ZONE AVEC DÉGRADÉ CONTINU)
+    # ÉTAPE 3 : SÉLECTION DE LA ZONE (NOM SEUL + DÉGRADÉ RAINBOW)
     elif auth_step == 3:
         st.markdown("<div class='user-id-badge-3d'>📍 SÉLECTION DE LA ZONE LOGISTIQUE</div>", unsafe_allow_html=True)
         st.info(f"Profil actif : **{st.session_state.get('user_name', '')}** ({st.session_state.get('user_role', '')})")
-        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur la zone pour continuer :</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 18px; color: #CBD5E1; font-weight: 700;'>Cliquez sur votre zone pour continuer :</p>", unsafe_allow_html=True)
 
         ZONES_BADGES = [
-            {"key": "Zone 1", "icon": "🎞️", "cls": "z-color-0"},
-            {"key": "Zone 2", "icon": "🖥️", "cls": "z-color-1"},
-            {"key": "Zone 3", "icon": "🚛", "cls": "z-color-2"},
-            {"key": "Zone 4", "icon": "📋", "cls": "z-color-3"},
-            {"key": "Zone 5", "icon": "🥫", "cls": "z-color-4"},
-            {"key": "Zone 6", "icon": "🏗️", "cls": "z-color-5"},
-            {"key": "Zone 7", "icon": "📦", "cls": "z-color-6"},
-            {"key": "Zone 8", "icon": "⚙️", "cls": "z-color-7"},
-            {"key": "Zone 9", "icon": "🧪", "cls": "z-color-8"},
-            {"key": "Zone 10", "icon": "☣️", "cls": "z-color-9"}
+            {"key": "Zone 1", "icon": "🎞️"},
+            {"key": "Zone 2", "icon": "🖥️"},
+            {"key": "Zone 3", "icon": "🚛"},
+            {"key": "Zone 4", "icon": "📋"},
+            {"key": "Zone 5", "icon": "🥫"},
+            {"key": "Zone 6", "icon": "🏗️"},
+            {"key": "Zone 7", "icon": "📦"},
+            {"key": "Zone 8", "icon": "⚙️"},
+            {"key": "Zone 9", "icon": "🧪"},
+            {"key": "Zone 10", "icon": "☣️"}
         ]
 
         col_z1, col_z2 = st.columns(2)
         for idx, z in enumerate(ZONES_BADGES):
             target_col = col_z1 if idx % 2 == 0 else col_z2
             with target_col:
-                st.markdown(f"<div class='zone-badge-wrap {z['cls']}'>", unsafe_allow_html=True)
+                st.markdown(f"<div class='zone-marker-{idx}'></div>", unsafe_allow_html=True)
                 lbl = f"{z['icon']}  {z['key']}"
                 if st.button(lbl, key=f"z_badge_{idx}", use_container_width=True):
-                    st.session_state.user_zone = z["key"]
-                    st.session_state.auth_step = 4  # Passer à l'étape 4 de confirmation
+                    st.session_state.pending_zone = z["key"]
+                    st.session_state.auth_step = 4 # Étape de confirmation!
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
@@ -895,49 +958,42 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ÉTAPE 4 : CONFIRMATION ET COMMENCER LE DIAGNOSTIC OU RETOUR AU MENU
+    # ÉTAPE 4 : CONFIRMATION AVANT LANCEMENT DU DIAGNOSTIC TERRAIN
     elif auth_step == 4:
-        st.markdown("<div class='user-id-badge-3d'>📍 CONFIRMATION DE L'AUDIT TERRAIN</div>", unsafe_allow_html=True)
-        
-        sel_user = st.session_state.get('user_name', '')
-        sel_role = st.session_state.get('user_role', 'Auditeur')
-        sel_zone = st.session_state.get('user_zone', 'Zone 1')
-        zone_info = ZONES_MASSILLY.get(sel_zone, {})
-        
+        target_zone = st.session_state.get("pending_zone", "Zone 1")
+        sponsor_name = ZONES_MASSILLY.get(target_zone, {}).get("sponsor", "Sponsor")
+        zone_label = ZONES_MASSILLY.get(target_zone, {}).get("label", target_zone)
+
+        st.markdown("<div class='user-id-badge-3d'>📋 CONFIRMATION DE L'AUDIT</div>", unsafe_allow_html=True)
         st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #1E293B, #0F172A); border: 3px solid #38BDF8; border-radius: 24px; padding: 30px; text-align: center; margin: 20px auto; max-width: 750px; box-shadow: 0 15px 35px rgba(56, 189, 248, 0.35);'>
-            <div style='font-size: 1.2rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;'>
-                SESSION D'AUDIT TERRAIN
-            </div>
-            <div style='font-size: 2rem; font-weight: 900; color: #FFFFFF; margin-top: 12px;'>
-                👤 {sel_user} <span style='font-size: 1.2rem; color: #94A3B8;'>({sel_role})</span>
-            </div>
-            <div style='font-size: 1.7rem; font-weight: 900; color: #F59E0B; margin-top: 12px;'>
-                📍 {zone_info.get('label', sel_zone)}
-            </div>
-            <div style='font-size: 1.15rem; color: #CBD5E1; margin-top: 8px;'>
-                Sponsor Responsable : <b>{zone_info.get('sponsor', '')}</b>
-            </div>
+        <div style='background: linear-gradient(135deg, #1E293B, #0F172A); border: 3px solid #38BDF8; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 25px;'>
+            <div style='font-size: 1.2rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;'>VISITE 5S PRÊTE</div>
+            <div style='font-size: 2rem; font-weight: 900; color: #FFFFFF; margin-top: 10px;'>📍 {zone_label}</div>
+            <div style='font-size: 1.1rem; color: #CBD5E1; margin-top: 8px;'>Auditeur : <b>{st.session_state.get('user_name', '')}</b> ({st.session_state.get('user_role', '')})</div>
+            <div style='font-size: 1.1rem; color: #F59E0B; margin-top: 4px;'>Sponsor Responsable : <b>{sponsor_name}</b></div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🚀 COMMENCER LE DIAGNOSTIC TERRAIN", use_container_width=True):
-            st.session_state.user_authenticated = True
-            st.session_state.audit_started = True
-            st.session_state.current_q_idx = 0
-            st.session_state.answers = {}
-            st.session_state.auth_step = 0
-            st.session_state.portal_shown = False
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("🚀 COMMENCER LE DIAGNOSTIC TERRAIN", use_container_width=True):
+                st.session_state.user_zone = target_zone
+                st.session_state.user_authenticated = True
+                st.session_state.audit_started = True
+                st.session_state.current_q_idx = 0
+                st.session_state.answers = {}
+                st.session_state.auth_step = 0
+                st.session_state.portal_shown = False
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-        if st.button("⬅️ RETOUR AU MENU / CHANGER DE ZONE", use_container_width=True):
-            st.session_state.auth_step = 3
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        with col_c2:
+            st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+            if st.button("⬅️ RETOUR AU MENU / CHANGER DE ZONE", use_container_width=True):
+                st.session_state.auth_step = 3
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================== APPLICATION PRINCIPALE (UTILISATEUR CONNECTÉ)
 else:
