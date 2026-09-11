@@ -2,11 +2,8 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-import textwrap
 from datetime import datetime
 
-# Import flexible support pour streamlit-gsheets OU st-gsheets-connection
-HAS_GSHEETS = False
 try:
     from streamlit_gsheets import GSheetsConnection
     HAS_GSHEETS = True
@@ -27,7 +24,7 @@ def get_gsheets_connection():
 
 # Configuration de la page
 st.set_page_config(
-    page_title="Massilly - Audit 5S Mobile",
+    page_title="Massilly - Audit 5S Mobile v14",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -49,24 +46,89 @@ ZONES_MASSILLY = {
 
 # Les 15 critères d'audit officiels de Massilly
 CRITERES_OFFICIELS = [
-    {"id": "c1", "cat": "1. Sort (Seiri) - Trier", "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."},
-    {"id": "c2", "cat": "1. Sort (Seiri) - Trier", "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."},
-    {"id": "c3", "cat": "1. Sort (Seiri) - Trier", "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."},
-    {"id": "c4", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."},
-    {"id": "c5", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."},
-    {"id": "c6", "cat": "2. Straighten (Seiton) - Ranger", "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."},
-    {"id": "c7", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."},
-    {"id": "c8", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."},
-    {"id": "c9", "cat": "3. Sweep (Seiso) - Nettoyer", "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."},
-    {"id": "c10", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."},
-    {"id": "c11", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."},
-    {"id": "c12", "cat": "4. Standardize (Seiketsu) - Standardiser", "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."},
-    {"id": "c13", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."},
-    {"id": "c14", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."},
-    {"id": "c15", "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter", "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."}
+    # Seiri (Trier)
+    {
+        "id": "c1",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les éléments inutiles ont été supprimés de la zone (au sol, sur les murs, autour des piliers, au plafond, sur les abords)."
+    },
+    {
+        "id": "c2",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les tiroirs, établis, servantes et armoires sont vidés des choses inutiles ou superflues."
+    },
+    {
+        "id": "c3",
+        "cat": "1. Sort (Seiri) - Trier",
+        "txt": "Les allées de circulation sont dégagées et propres (absence d'encombrement par des palettes)."
+    },
+    # Seiton (Ranger)
+    {
+        "id": "c4",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Tous les équipements, bennes, palettes et outils de la zone ont un marquage au sol et sont bien rangés à leur emplacement."
+    },
+    {
+        "id": "c5",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Le matériel de fourniture, de consommable et les outils de nettoyage sont clairement identifiés, étiquetés et rangés."
+    },
+    {
+        "id": "c6",
+        "cat": "2. Straighten (Seiton) - Ranger",
+        "txt": "Les matières premières et produits bloqués sont correctement stockés dans la zone (présence de la feuille d'identification bleue)."
+    },
+    # Seiso (Nettoyer)
+    {
+        "id": "c7",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "Les sols, les surfaces de travail, l'équipement et les aires d'entreposage de la zone sont propres (sans poussière ni résidus)."
+    },
+    {
+        "id": "c8",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "Les déchets et les matières recyclables sont collectés et éliminés correctement (respect du tri sélectif cartons/plastiques)."
+    },
+    {
+        "id": "c9",
+        "cat": "3. Sweep (Seiso) - Nettoyer",
+        "txt": "L'environnement de travail est bon (éclairages fonctionnels, absence de poussière excessive, marquage au sol bien visible)."
+    },
+    # Seiketsu (Standardiser)
+    {
+        "id": "c10",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Les rôles sont clairement définis pour garder la zone propre et ordonnée (Opérateurs, planning de nettoyage...)."
+    },
+    {
+        "id": "c11",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Les tâches standard liées au nettoyage et à l'organisation sont définies (Rituel de fin de poste de 5-10 minutes...)."
+    },
+    {
+        "id": "c12",
+        "cat": "4. Standardize (Seiketsu) - Standardiser",
+        "txt": "Il est évident visuellement qu'il y a une place désignée pour chaque chose (bennes, corbeilles, balais...)."
+    },
+    # Shitsuke (Maintenir)
+    {
+        "id": "c13",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "La zone présente une bonne organisation générale et ne présente aucun danger pour la sécurité du personnel (pas de risque de chute)."
+    },
+    {
+        "id": "c14",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Les documents et instructions visuelles de la zone sont à jour (pas de feuilles volantes ou de notes obsolètes)."
+    },
+    {
+        "id": "c15",
+        "cat": "5. Sustain (Shitsuke) - Maintenir/Respecter",
+        "txt": "Le standard de la zone est conforme, pertinent et respecté au quotidien par l'ensemble de l'équipe terrain."
+    }
 ]
 
-# Initialisation de la session
+# Initialisation robuste de la session
 st.session_state.setdefault("user_authenticated", False)
 st.session_state.setdefault("user_role", "")
 st.session_state.setdefault("user_name", "")
@@ -77,8 +139,9 @@ st.session_state.setdefault("answers", {})
 st.session_state.setdefault("test_mode", False)
 st.session_state.setdefault("portal_shown", False)
 st.session_state.setdefault("auth_step", 0)
-st.session_state.setdefault("opening_anim", False)
+st.session_state.setdefault("audit_saved", False)
 
+# Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.get("test_mode", False):
     SHARED_DATA_FILE = "test_suivi_audits_5s.csv"
     SHARED_LOG_FILE = "test_journal_activite_5s.json"
@@ -86,6 +149,7 @@ else:
     SHARED_DATA_FILE = "suivi_audits_5s.csv"
     SHARED_LOG_FILE = "journal_activite_5s.json"
 
+# Création automatique des fichiers s'ils n'existent pas
 if not os.path.exists(SHARED_DATA_FILE):
     colonnes_init = [
         "Date", "Zone", "Sponsor", "Auditeur", "Role",
@@ -140,6 +204,7 @@ def sauvegarder_audit_local(data_dict):
         except Exception as e:
             err_details = str(e)
 
+    # Backup local CSV
     try:
         df = pd.read_csv(SHARED_DATA_FILE, encoding='utf-8')
     except Exception:
@@ -149,6 +214,7 @@ def sauvegarder_audit_local(data_dict):
     df = pd.concat([df, new_row], ignore_index=True)
     df.to_csv(SHARED_DATA_FILE, index=False, encoding='utf-8')
 
+    # Journal JSON
     log_entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "TEST - Diagnostic" if st.session_state.get("test_mode", False) else "Diagnostic Réel",
@@ -167,12 +233,11 @@ def sauvegarder_audit_local(data_dict):
     return gsheets_ok, err_details
 
 
-# CSS GLOBAL ULTRA-SÉCURISÉ & DEDENTED (AUCUNE DÉCORRECTION D'INDENTATION POUR ÉVITER LES BLOCS DE CODE TEXTE)
-css_code = textwrap.dedent("""
+# ========================================== STYLE CSS : DESIGN 3D PURE ET SÉCURISÉ
+st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;700;800&family=Playfair+Display:ital,wght=0,600;0,800;1,600&display=swap');
 
-    /* Fond d'application dynamique */
     .stApp {
         background: linear-gradient(-45deg, #0A1128, #101F42, #071126, #001F3D) !important;
         background-size: 400% 400% !important;
@@ -196,7 +261,6 @@ css_code = textwrap.dedent("""
         color: #0F172A !important;
     }
 
-    /* --- TITRE CORPO 3D MÉTALLIQUE FLOTTAISON --- */
     .main-header-3d {
         font-family: 'Playfair Display', serif !important;
         font-weight: 900 !important;
@@ -222,11 +286,10 @@ css_code = textwrap.dedent("""
     }
     
     @keyframes floatHeader {
-        0% { transform: perspective(800px) rotateX(15deg) translateY(0px) rotateY(-1deg); }
-        100% { transform: perspective(800px) rotateX(15deg) translateY(-10px) rotateY(1deg); }
+        0% { transform: perspective(800px) rotateX(15deg) translateY(0px); }
+        100% { transform: perspective(800px) rotateX(15deg) translateY(-10px); }
     }
 
-    /* --- BADGE PORTAIL D'IDENTIFICATION 3D --- */
     .user-id-badge-3d {
         background: linear-gradient(135deg, #1E293B, #0B1329) !important;
         border: 3px solid #38BDF8 !important;
@@ -237,167 +300,77 @@ css_code = textwrap.dedent("""
         font-size: 1.7rem !important;
         font-weight: 900 !important;
         letter-spacing: 5px;
-        margin: 15px auto 30px auto !important;
+        margin: 20px auto 30px auto !important;
         max-width: 820px;
-        box-shadow: 
-            0 15px 35px rgba(56, 189, 248, 0.4),
-            inset 0 0 25px rgba(56, 189, 248, 0.3) !important;
-        text-shadow: 0 0 12px rgba(56, 189, 248, 0.7) !important;
-        transform: perspective(800px) rotateX(10deg);
-        animation: floatBadge 3.2s ease-in-out infinite alternate !important;
-        border-bottom: 8px solid #005F73 !important;
+        box-shadow: 0 15px 35px rgba(56, 189, 248, 0.4) !important;
     }
 
-    @keyframes floatBadge {
-        0% { transform: perspective(800px) rotateX(10deg) translateY(0px) scale(0.98); }
-        100% { transform: perspective(800px) rotateX(10deg) translateY(-8px) scale(1.01); }
-    }
-
-    /* --- LA BOÎTE DÉCORÉE MASSILLY 3D INTERACTIVE --- */
-    .box-scene-container {
-        perspective: 1000px;
-        width: 100%;
-        max-width: 460px;
-        height: 320px;
-        margin: 25px auto;
-        position: relative;
-    }
-
-    .massilly-box-3d {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        transform-style: preserve-3d;
-        transform: rotateX(16deg) rotateY(-8deg);
-        transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    /* Animation d'ouverture WHAOU avec plongeon de caméra */
-    .massilly-box-3d.opening-active {
-        animation: boxWhaouOpen 1.5s cubic-bezier(0.7, 0, 0.25, 1) forwards !important;
-    }
-
-    @keyframes boxWhaouOpen {
-        0% {
-            transform: rotateX(16deg) rotateY(-8deg) scale(1);
-        }
-        40% {
-            transform: rotateX(25deg) rotateY(0deg) scale(1.15) translateY(20px);
-        }
-        100% {
-            transform: rotateX(75deg) rotateY(0deg) scale(3.8) translateY(120px);
-            opacity: 0.1;
-        }
-    }
-
-    /* Intérieur doré étincelant de la boîte */
-    .box-interior-glow {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        bottom: 10px;
-        background: radial-gradient(circle, #F59E0B 0%, #D97706 40%, #000000 100%);
-        border-radius: 20px;
-        opacity: 0;
-        transition: opacity 0.8s ease;
-        box-shadow: 0 0 80px rgba(245, 158, 11, 0.9), inset 0 0 50px rgba(255, 255, 255, 0.8);
-    }
-
-    .massilly-box-3d.opening-active .box-interior-glow {
-        opacity: 1 !important;
-    }
-
-    /* Corps métallique de la boîte */
-    .box-body-metal {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #0A1E3F 0%, #0E529E 50%, #062850 100%) !important;
-        border: 4px solid #F59E0B !important;
+    /* --- CARTE BOÎTE DÉCORÉE MASSILLY 1911 (ACCEUIL 3D PRESTIGE) --- */
+    .massilly-box-card-3d {
+        background: linear-gradient(135deg, #0A1E3F 0%, #0E529E 60%, #062850 100%) !important;
+        border: 4px solid #F59E0B !important; /* Dorure Or Massilly */
         border-radius: 24px !important;
+        padding: 40px 25px !important;
+        text-align: center !important;
+        margin: 25px auto !important;
+        max-width: 650px !important;
         box-shadow: 
-            0 25px 60px rgba(0, 0, 0, 0.8),
-            inset 0 0 35px rgba(56, 189, 248, 0.4),
-            0 0 35px rgba(245, 158, 11, 0.3) !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        border-bottom: 12px solid #D97706 !important;
+            0 20px 50px rgba(0, 0, 0, 0.8),
+            0 0 30px rgba(245, 158, 11, 0.4) !important;
+        transform: perspective(800px) rotateX(5deg);
+        animation: boxFloat 3.5s ease-in-out infinite alternate !important;
     }
 
-    /* Couvercle articulé */
-    .box-lid-metal {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(145deg, #0E529E 0%, #1E293B 60%, #0B1329 100%) !important;
-        border: 4px solid #F59E0B !important;
-        border-radius: 24px !important;
-        transform-origin: top center;
-        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        backface-visibility: hidden;
+    @keyframes boxFloat {
+        0% { transform: perspective(800px) rotateX(5deg) translateY(0px); }
+        100% { transform: perspective(800px) rotateX(5deg) translateY(-12px); }
     }
 
-    .massilly-box-3d.opening-active .box-lid-metal {
-        transform: rotateX(-125deg) translateY(-20px) !important;
-    }
-
-    /* Latch / Serrure or */
-    .box-latch-gold {
-        position: absolute;
-        bottom: 15px;
-        width: 50px;
-        height: 22px;
-        background: linear-gradient(135deg, #F59E0B, #FBBF24, #D97706);
-        border-radius: 6px;
-        border: 2px solid #FFFFFF;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 900;
-        color: #000;
-    }
-
-    /* --- SELECTBOX XXL SMARTPHONE TACTILE --- */
+    /* --- SELECTBOX XXL TACTILE SPÉCIALE SMARTPHONE --- */
     div[data-testid="stSelectbox"] > div {
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
+        background: linear-gradient(135deg, #1E293B, #0F172A) !important;
         border: 3px solid #38BDF8 !important;
         border-radius: 18px !important;
         min-height: 82px !important;
-        padding: 10px 18px !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.2) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
-    div[data-testid="stSelectbox"] [data-baseweb="select"] {
+    div[data-testid="stSelectbox"] div[role="combobox"] {
         font-size: 24px !important;
         font-weight: 800 !important;
         color: #FFFFFF !important;
+        padding-left: 20px !important;
     }
 
     div[data-testid="stSelectbox"] label {
         font-size: 22px !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important;
         color: #38BDF8 !important;
-        letter-spacing: 1px !important;
-        margin-bottom: 8px !important;
+        letter-spacing: 1.5px !important;
+        margin-bottom: 12px !important;
+        text-transform: uppercase !important;
     }
 
-    /* --- BOUTONS VOTE (OUI / NON / N/A) --- */
+    /* --- TOUS LES BOUTONS PRESTIGE 3D --- */
+    .stButton > button, div[data-testid="stButton"] button {
+        background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
+        background-size: 200% auto !important;
+        color: #FFFFFF !important;
+        height: 85px !important;
+        font-size: 24px !important;
+        font-weight: 900 !important;
+        border-radius: 20px !important;
+        border: none !important;
+        border-bottom: 8px solid #063970 !important;
+        box-shadow: 0 15px 30px rgba(14, 82, 158, 0.45) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+        cursor: pointer !important;
+        letter-spacing: 2px !important;
+    }
+
+    /* Boutons de vote (OUI / NON / N/A) */
     div[data-testid="stHorizontalBlock"] button {
         width: 100% !important;
         height: 115px !important;
@@ -411,48 +384,37 @@ css_code = textwrap.dedent("""
     div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
         background: linear-gradient(135deg, #10B981, #059669) !important;
         border-bottom: 8px solid #047857 !important;
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2) !important;
     }
 
     div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {
         background: linear-gradient(135deg, #EF4444, #DC2626) !important;
         border-bottom: 8px solid #B91C1C !important;
-        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
     }
 
     div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
         background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
         border-bottom: 8px solid #1E40AF !important;
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
-    }
-
-    /* --- BOUTONS D'ACTION ET RETOUR --- */
-    .stButton > button, div[data-testid="stButton"] button {
-        background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
-        background-size: 200% auto !important;
-        color: #FFFFFF !important;
-        height: 85px !important;
-        font-size: 24px !important;
-        font-weight: 900 !important;
-        border-radius: 20px !important;
-        border: none !important;
-        border-bottom: 8px solid #063970 !important;
-        box-shadow: 0 12px 28px rgba(14, 82, 158, 0.45) !important;
-        letter-spacing: 2px;
     }
 
     .back-btn-container + .stButton button, .back-btn-container button {
         background: rgba(30, 41, 59, 0.8) !important;
         color: #94A3B8 !important;
         border: 2px solid #475569 !important;
-        border-bottom: none !important;
         height: 60px !important;
         font-size: 18px !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+    }
+
+    .small-btn-container + .stButton button, .small-btn-container button {
+        height: 50px !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        background: #1E293B !important;
     }
 </style>
-""")
-
-st.markdown(css_code, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Affichage permanent du titre principal
 st.markdown("<h1 class='main-header-3d'>📦 MASSILLY LOGISTIQUE</h1>", unsafe_allow_html=True)
@@ -461,75 +423,35 @@ if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== PARCOURS MULTI-ÉTAPES (ETAPES 0 à 3)
+# ========================================== ÉCRAN DE CONNEXION MULTI-ÉTAPES (ETAPES 0 à 3)
 if not st.session_state.get("user_authenticated", False):
     auth_step = st.session_state.get("auth_step", 0)
     
-    # ÉTAPE 0 : BIENVENUE CHEZ MASSILLY & LA BOÎTE DÉCORÉE 3D WHAOU
+    # ÉTAPE 0 : ACCUEIL PRESTIGE BOÎTE DÉCORÉE MASSILLY 1911
     if auth_step == 0:
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='user-id-badge-3d'>✨ BIENVENUE CHEZ MASSILLY ✨</div>", unsafe_allow_html=True)
         
-        header_html = textwrap.dedent("""
-        <div style='text-align: center; margin-bottom: 20px;'>
-            <div style='font-size: 1.15rem; font-weight: 800; color: #38BDF8; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 6px;'>
-                GROUPE MASSILLY • DEPUIS 1911
+        st.markdown("""
+        <div class='massilly-box-card-3d'>
+            <div style='font-size: 4.5rem; margin-bottom: 10px;'>🎁</div>
+            <div style='font-family: "Playfair Display", serif; font-size: 2.2rem; font-weight: 900; color: #F59E0B; letter-spacing: 4px;'>
+                MASSILLY 1911
             </div>
-            <h1 style='font-family: "Playfair Display", serif; font-size: 3.2rem; font-weight: 900; background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #0E529E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); text-transform: uppercase;'>
-                ✨ BIENVENUE CHEZ MASSILLY ✨
-            </h1>
-            <div style='font-size: 1.1rem; color: #94A3B8; font-weight: 700; letter-spacing: 2px;'>
+            <div style='font-size: 1.1rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px;'>
+                FABRIQUÉ EN FRANCE • BOÎTE DÉCORÉE PREMIUM
+            </div>
+            <div style='font-size: 0.95rem; color: #94A3B8; margin-top: 10px; font-weight: 600;'>
                 PORTAIL D'EXCELLENCE OPÉRATIONNELLE ET LOGISTIQUE 5S
             </div>
         </div>
-        """)
-        st.markdown(header_html, unsafe_allow_html=True)
-
-        is_opening = st.session_state.get("opening_anim", False)
-        opening_class = "opening-active" if is_opening else ""
-
-        box_html = textwrap.dedent(f"""
-        <div class='box-scene-container'>
-            <div class='massilly-box-3d {opening_class}'>
-                <div class='box-interior-glow'></div>
-                
-                <div class='box-body-metal'>
-                    <div style='font-size: 3rem;'>🎁</div>
-                    <div style='font-family: "Playfair Display", serif; font-size: 1.8rem; font-weight: 900; color: #FBBF24; letter-spacing: 3px; margin-top: 5px;'>
-                        MASSILLY 1911
-                    </div>
-                    <div style='font-size: 0.95rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px;'>
-                        EXCELLENCE OPÉRATIONNELLE
-                    </div>
-                </div>
-                
-                <div class='box-lid-metal'>
-                    <div style='font-size: 3.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));'>⚙️</div>
-                    <div style='font-family: "Playfair Display", serif; font-size: 1.7rem; font-weight: 900; color: #FFFFFF; letter-spacing: 4px; margin-top: 6px;'>
-                        MASSILLY
-                    </div>
-                    <div style='font-size: 0.85rem; color: #FBBF24; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px;'>
-                        FABRIQUÉ EN FRANCE • 5S
-                    </div>
-                    <div class='box-latch-gold'>🔒 1911</div>
-                </div>
-            </div>
-        </div>
-        """)
-        st.markdown(box_html, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        
         st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-        if st.button("🎁 ENTRER DANS L'APPLICATION", use_container_width=True):
-            st.session_state.opening_anim = True
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        if is_opening:
-            import time
-            st.session_state.opening_anim = False
+        if st.button("🚀 ENTRER DANS L'APPLICATION 5S", use_container_width=True):
             st.session_state.auth_step = 1
             st.rerun()
-
+        st.markdown("</div>", unsafe_allow_html=True)
+        
     # ÉTAPE 1 : CHOIX DU RÔLE
     elif auth_step == 1:
         st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
@@ -722,27 +644,26 @@ else:
                 st.progress(pct_prog / 100.0)
                 st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Étape {idx + 1} sur {total_q} ({pct_prog}%)</p>", unsafe_allow_html=True)
                 
-                card_html = textwrap.dedent(f"""
+                st.markdown(f"""
                 <div class='question-card'>
                     <div class='question-cat'>{crit['cat']}</div>
                     <div class='question-text'>{crit['txt']}</div>
                 </div>
-                """)
-                st.markdown(card_html, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
                 
-                col_b1, col_b2, col_b3 = st.columns(3)
-                with col_b1:
-                    if st.button("🟢 OUI", key=f"btn_oui_{idx}", use_container_width=True):
+                c_v1, c_v2, c_v3 = st.columns(3)
+                with c_v1:
+                    if st.button("🟢 OUI", use_container_width=True, key=f"btn_oui_{idx}"):
                         st.session_state.answers[crit["id"]] = "OUI"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                with col_b2:
-                    if st.button("🔴 NON", key=f"btn_non_{idx}", use_container_width=True):
+                with c_v2:
+                    if st.button("🔴 NON", use_container_width=True, key=f"btn_non_{idx}"):
                         st.session_state.answers[crit["id"]] = "NON"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                with col_b3:
-                    if st.button("🔵 N/A", key=f"btn_na_{idx}", use_container_width=True):
+                with c_v3:
+                    if st.button("🔵 N/A", use_container_width=True, key=f"btn_na_{idx}"):
                         st.session_state.answers[crit["id"]] = "N/A"
                         st.session_state.current_q_idx += 1
                         st.rerun()
@@ -756,60 +677,73 @@ else:
                     st.markdown("</div>", unsafe_allow_html=True)
                     
             else:
-                st.markdown("## 🎯 Diagnostic terminé !")
+                st.success("🎉 Questionnaire terminé ! Saisissez vos observations ci-dessous :")
+                
                 t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
                 t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
                 t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                score = t_oui
+                total_ev = 15 - t_na
+                pct = int((score / total_ev) * 100) if total_ev > 0 else 0
                 
-                sc_total = t_oui
-                pct_final = int((sc_total / 15) * 100) if 15 > 0 else 0
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Score Conforme", f"{score}/{total_ev}")
+                m2.metric("Taux de Conformité", f"{pct}%")
+                m3.metric("Non-Conformités (NON)", f"{t_non}")
+                m4.metric("Non Applicables (N/A)", f"{t_na}")
                 
-                st.markdown(f"### Score Total : {sc_total} / 15 ({pct_final}%)")
+                st.markdown("---")
+                st.markdown("### 📝 Observations terrain & Actions")
+                obs = st.text_area("Remarques ou écarts constatés :")
+                act = st.text_area("Actions correctives immédiates :")
                 
-                obs = st.text_area("Observations terrain / Anomalies constatées :", "")
-                act = st.text_area("Actions correctives immédiates proposées :", "")
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                if st.button("💾 VALIDER ET ENREGISTRER L'AUDIT", use_container_width=True):
-                    audit_data = {
-                        "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "Zone": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]["label"],
-                        "Sponsor": ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]["sponsor"],
-                        "Auditeur": st.session_state.get('user_name', ''),
-                        "Role": st.session_state.get('user_role', ''),
-                        "Score_Total": sc_total,
-                        "Pourcentage": pct_final,
-                        "Observations": obs,
-                        "Actions_Correctives": act
-                    }
-                    for c in CRITERES_OFFICIELS:
-                        audit_data[c["id"]] = st.session_state.answers.get(c["id"], "N/A")
-                        
-                    gs_ok, err_msg = sauvegarder_audit_local(audit_data)
-                    
-                    st.session_state.audit_started = False
-                    st.session_state.current_q_idx = 0
-                    st.session_state.answers = {}
-                    
-                    if gs_ok:
-                        st.success("✅ Audit enregistré avec succès dans Google Sheets et sur le serveur !")
-                    else:
-                        st.warning(f"⚠️ Audit enregistré en sauvegarde locale CSV. (Sync GSheets: {err_msg})")
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+                col_fin1, col_fin2 = st.columns(2)
+                with col_fin1:
+                    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                    if st.button("⬅️ Modifier les réponses", use_container_width=True):
+                        st.session_state.current_q_idx = 0
+                        st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+                with col_fin2:
+                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                    if st.button("💾 VALIDER & ENREGISTRER L'AUDIT 5S", use_container_width=True):
+                        audit_record = {
+                            "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "Zone": ZONES_MASSILLY[st.session_state.user_zone]["label"],
+                            "Sponsor": ZONES_MASSILLY[st.session_state.user_zone]["sponsor"],
+                            "Auditeur": st.session_state.user_name,
+                            "Role": st.session_state.user_role,
+                            "Score_Total": score,
+                            "Pourcentage": pct,
+                            "Observations": obs,
+                            "Actions_Correctives": act
+                        }
+                        for c in CRITERES_OFFICIELS:
+                            audit_record[c["id"]] = st.session_state.answers.get(c["id"], "N/A")
+                            
+                        ok, err = sauvegarder_audit_local(audit_record)
+                        st.session_state.audit_started = False
+                        st.session_state.current_q_idx = 0
+                        st.session_state.answers = {}
+                        if ok:
+                            st.balloons()
+                            st.success("✅ Audit enregistré avec succès dans Google Sheets !")
+                        else:
+                            st.warning(f"⚠️ Audit sauvegardé localement (GSheets offline : {err})")
+                        st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
-    # ========================================== ONGLET 2 : ANALYSE & HISTORIQUE
+    # ========================================== ONGLET 2 : HISTORIQUE & STATISTIQUES
     elif menu_actif == "📊 Analyse & Historique":
-        st.markdown("### Historique des audits enregistrés")
+        st.markdown("### 📊 Historique des Audits 5S Logistique")
         df_hist = charger_audits()
-        if df_hist is not None and not df_hist.empty:
+        if not df_hist.empty:
             st.dataframe(df_hist, use_container_width=True)
         else:
             st.info("Aucun audit enregistré pour le moment.")
 
     # ========================================== ONGLET 3 : RAPPEL DES STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
-        st.markdown("### Standards 5S Usine Massilly")
+        st.markdown("### 🗺️ Carte des 10 Zones & Standards Massilly")
         for z_key, z_val in ZONES_MASSILLY.items():
-            st.markdown(f"**{z_val['label']}** — Sponsor : *{z_val['sponsor']}*")
+            st.markdown(f"**{z_val['label']}** — *Sponsor : {z_val['sponsor']}*")
