@@ -20,7 +20,7 @@ def get_gsheets_connection():
 
 # Configuration de la page
 st.set_page_config(
-    page_title="Massilly - Audit 5S Mobile v14",
+    page_title="Massilly - Audit 5S Mobile v15",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -134,10 +134,7 @@ st.session_state.setdefault("current_q_idx", 0)
 st.session_state.setdefault("answers", {})
 st.session_state.setdefault("test_mode", False)
 st.session_state.setdefault("portal_shown", False)
-st.session_state.setdefault("auth_step", 1)
-st.session_state.setdefault("audit_saved", False)
-st.session_state.setdefault("save_result_ok", False)
-st.session_state.setdefault("save_result_err", "")
+st.session_state.setdefault("auth_step", 0)
 
 # Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.get("test_mode", False):
@@ -303,7 +300,7 @@ st.markdown("""
         font-size: 1.7rem !important;
         font-weight: 900 !important;
         letter-spacing: 5px;
-        margin: 20px auto 30px auto !important;
+        margin: 25px auto 40px auto !important;
         max-width: 820px;
         box-shadow: 
             0 15px 35px rgba(56, 189, 248, 0.4),
@@ -319,32 +316,93 @@ st.markdown("""
         100% { transform: perspective(800px) rotateX(10deg) translateY(-8px) scale(1.01); }
     }
 
-    /* --- GROS LOGO 5S FLOTTANT 3D (ACCUEIL) --- */
-    .logo-5s-3d-floating {
-        background: linear-gradient(135deg, rgba(14, 82, 158, 0.25), rgba(15, 23, 42, 0.85)) !important;
+    /* --- SCÈNE D'ACCUEIL ANIMÉE ET SYMBOLES MASSILLY EN VOL --- */
+    .welcome-hero-container {
+        text-align: center;
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+        border: 3px solid #38BDF8;
+        border-radius: 28px;
+        box-shadow: 0 20px 50px rgba(56, 189, 248, 0.3);
+        margin-bottom: 35px;
+    }
+
+    .welcome-title-glow {
+        font-size: 2.8rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #FFFFFF, #38BDF8, #0E529E);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+        letter-spacing: 3px;
+        margin-bottom: 25px;
+    }
+
+    .floating-symbols-field {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin: 35px 0;
+        font-size: 3.8rem;
+    }
+
+    .sym-fly-1 { animation: floatOrbit1 4s ease-in-out infinite alternate; }
+    .sym-fly-2 { animation: floatOrbit2 5s ease-in-out infinite alternate; }
+    .sym-fly-3 { animation: floatOrbit3 3.5s ease-in-out infinite alternate; }
+    .sym-fly-4 { animation: floatOrbit1 4.5s ease-in-out infinite alternate; }
+    .sym-fly-5 { animation: floatOrbit2 3.8s ease-in-out infinite alternate; }
+
+    @keyframes floatOrbit1 {
+        0% { transform: translateY(0px) rotate(0deg) scale(1); }
+        100% { transform: translateY(-18px) rotate(12deg) scale(1.15); }
+    }
+    @keyframes floatOrbit2 {
+        0% { transform: translateY(0px) rotate(0deg) scale(1); }
+        100% { transform: translateY(20px) rotate(-15deg) scale(0.9); }
+    }
+    @keyframes floatOrbit3 {
+        0% { transform: translateY(0px) rotate(0deg) scale(1.05); }
+        100% { transform: translateY(-25px) rotate(8deg) scale(1.2); }
+    }
+
+    /* --- MENUS DÉROULANTS (SELECTBOX) XXL MULTI-TACTILE MOBILE --- */
+    div[data-testid="stSelectbox"] > div {
+        min-height: 82px !important;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)) !important;
         border: 3px solid #38BDF8 !important;
-        border-radius: 24px !important;
-        padding: 35px 25px !important;
-        text-align: center !important;
-        margin: 30px auto !important;
-        max-width: 820px !important;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 25px rgba(56, 189, 248, 0.2) !important;
-        animation: floatBadge 3.5s ease-in-out infinite alternate !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 8px 16px !important;
     }
 
-    .logo-5s-3d-text {
-        font-size: 4.8rem !important;
-        font-weight: 900 !important;
-        letter-spacing: 8px !important;
-        background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #0E529E 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        text-shadow: 0 10px 20px rgba(56, 189, 248, 0.5) !important;
-        margin: 0 !important;
-        line-height: 1.1 !important;
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
+        color: #FFFFFF !important;
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
     }
 
-    /* --- ONGLETS MENU PRINCIPAL --- */
+    div[data-testid="stSelectbox"] label {
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        color: #38BDF8 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 12px !important;
+    }
+
+    div[data-baseweb="menu"] li {
+        min-height: 72px !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        padding: 18px 24px !important;
+    }
+
+    /* --- ONGLES DU MENU PRINCIPAL 3D --- */
     div[data-testid="stRadio"] div[role="radiogroup"], 
     div.row-widget.stRadio > div {
         background: linear-gradient(180deg, #1E293B, #0F172A) !important;
@@ -355,7 +413,9 @@ st.markdown("""
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-around !important;
-        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 
+            inset 0 4px 12px rgba(0, 0, 0, 0.6),
+            0 10px 20px rgba(0, 0, 0, 0.4) !important;
         perspective: 1000px;
         margin-bottom: 25px !important;
     }
@@ -380,15 +440,6 @@ st.markdown("""
         box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
     }
 
-    div[data-testid="stRadio"] div[role="radiogroup"] label:hover, 
-    div.row-widget.stRadio label:hover {
-        color: #FFFFFF !important;
-        border-color: #38BDF8 !important;
-        transform: translateY(-6px) rotateX(0deg) scale(1.02) !important;
-        box-shadow: 0 12px 25px rgba(56, 189, 248, 0.35) !important;
-        border-bottom: 8px solid #0E529E !important;
-    }
-
     div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
     div.row-widget.stRadio label:has(input:checked) {
         background: linear-gradient(135deg, #0E529E 0%, #38BDF8 100%) !important;
@@ -396,10 +447,13 @@ st.markdown("""
         border-color: #38BDF8 !important;
         border-bottom: 2px solid #063970 !important;
         transform: translateY(4px) rotateX(0deg) scale(0.98) !important;
-        box-shadow: 0 0 35px rgba(56, 189, 248, 0.85), 0 0 15px rgba(56, 189, 248, 0.4), inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 
+            0 0 35px rgba(56, 189, 248, 0.85),
+            0 0 15px rgba(56, 189, 248, 0.4),
+            inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
     }
 
-    /* --- CARTES DE CRITÈRES 3D --- */
+    /* --- CARTES DE CONTENU D'AUDIT 3D --- */
     .question-card {
         background-color: #FFFFFF !important;
         border: 2px solid #E2E8F0 !important;
@@ -408,8 +462,6 @@ st.markdown("""
         padding: 30px !important;
         margin-bottom: 25px !important;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
-        transform: perspective(1000px) rotateX(0deg);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
 
     .question-cat {
@@ -428,76 +480,56 @@ st.markdown("""
         line-height: 1.45;
     }
 
-    /* --- BOUTONS GLOBAUX (PRESTIGE 3D) --- */
-    .stButton > button, div[data-testid="stButton"] button {
+    /* --- STYLE GLOBAL DES BOUTONS DE L'APPLICATION --- */
+    .stButton > button,
+    div[data-testid="stButton"] button {
         background: linear-gradient(135deg, #0E529E 0%, #38BDF8 50%, #0E529E 100%) !important;
         background-size: 200% auto !important;
         color: #FFFFFF !important;
         height: 85px !important;
-        font-size: 24px !important;
+        font-size: 26px !important;
         font-weight: 900 !important;
         border-radius: 20px !important;
         border: none !important;
         border-bottom: 10px solid #063970 !important;
-        box-shadow: 0 15px 30px rgba(14, 82, 158, 0.45), 0 0 20px rgba(56, 189, 248, 0.3) !important;
+        box-shadow: 
+            0 15px 30px rgba(14, 82, 158, 0.45),
+            0 0 20px rgba(56, 189, 248, 0.3) !important;
         text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
         cursor: pointer;
         position: relative;
         overflow: hidden;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        animation: pulseGlow 2s infinite alternate !important;
     }
 
-    .stButton > button:hover, div[data-testid="stButton"] button:hover {
-        filter: brightness(1.25) !important;
-        background-position: right center !important;
-        transform: translateY(-8px) !important;
-        box-shadow: 0 25px 45px rgba(56, 189, 248, 0.75), 0 0 40px rgba(56, 189, 248, 0.6) !important;
-        border-bottom: 12px solid #063970 !important;
+    .stButton > button::before,
+    div[data-testid="stButton"] button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(
+            to right, 
+            rgba(255,255,255,0) 0%, 
+            rgba(255,255,255,0.6) 50%, 
+            rgba(255,255,255,0) 100%
+        );
+        transform: skewX(-25deg);
+        animation: shineSweep 2.2s infinite !important;
     }
 
-    .stButton > button:active, div[data-testid="stButton"] button:active {
-        transform: translateY(4px) !important;
-        border-bottom: 2px solid #063970 !important;
-        box-shadow: 0 4px 10px rgba(14, 82, 158, 0.2) !important;
+    @keyframes shineSweep {
+        0% { left: -120%; }
+        100% { left: 220%; }
     }
 
-    /* --- MASTER CARD FUSÉE 3D --- */
-    .btn-start-3d button {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 420px !important;
-        white-space: pre-wrap !important;
-        line-height: 1.5 !important;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
-        color: #FFFFFF !important;
-        font-size: 22px !important;
-        font-weight: 800 !important;
-        border-radius: 28px !important;
-        border: 4px solid #0E529E !important;
-        border-bottom: 14px solid #063970 !important;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(14, 82, 158, 0.4) !important;
-        transform: perspective(1000px) rotateX(10deg) translateY(0px) !important;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        padding: 40px !important;
-        cursor: pointer !important;
-    }
-
-    .btn-start-3d button::before {
-        content: "🚀" !important;
-        font-size: 7.5rem !important;
-        display: block !important;
-        margin-top: -15px !important;
-        margin-bottom: 25px !important;
-        animation: spinIcon 7s linear infinite !important;
-        filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.8)) !important;
-    }
-
-    @keyframes spinIcon {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 10px 20px rgba(14, 82, 158, 0.3), 0 0 10px rgba(56, 189, 248, 0.2); }
+        100% { box-shadow: 0 10px 40px rgba(56, 189, 248, 0.75), 0 0 25px rgba(56, 189, 248, 0.4); }
     }
 
     /* --- BOUTONS DE VOTE (OUI / NON / N/A) --- */
@@ -529,7 +561,7 @@ st.markdown("""
         box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
     }
 
-    /* --- BOUTON RETOUR --- */
+    /* --- BOUTONS RETOUR & PETITS BOUTONS --- */
     .back-btn-container + .stButton button,
     .back-btn-container + div.stButton button,
     .back-btn-container button {
@@ -564,12 +596,43 @@ if st.session_state.get("test_mode", False):
     st.markdown("<div class='test-badge'>🧪 SESSION DE TEST ACTIVE – ENREGISTREMENTS ISOLÉS</div>", unsafe_allow_html=True)
 
 
-# ========================================== ÉCRAN 1 : CONNEXION MULTI-ÉTAPES (ETAPES 1 à 4)
+# ========================================== ÉCRAN 1 : CONNEXION MULTI-ÉTAPES (ETAPES 0 à 4)
 if not st.session_state.get("user_authenticated", False):
-    auth_step = st.session_state.get("auth_step", 1)
+    auth_step = st.session_state.get("auth_step", 0)
     
-    # ÉTAPE 1 : ACCUEIL PRESTIGE AVEC BADGE CLIQUABLE ET GROS LOGO 5S FLOTTANT
-    if auth_step == 1:
+    # ÉTAPE 0 : PAGE DE BIENVENUE AVEC SYMBOLES MASSILLY ANIMÉS EN VOL
+    if auth_step == 0:
+        st.markdown("""
+        <div class='welcome-hero-container'>
+            <div class='welcome-title-glow'>✨ BIENVENUE CHEZ MASSILLY ✨</div>
+            <div style='font-size: 1.3rem; font-weight: 700; color: #E2E8F0; letter-spacing: 2px;'>
+                LEADER DE L'EMBALLAGE MÉTALLIQUE INDUSTRIEL
+            </div>
+            
+            <!-- SYMBOLES MASSILLY EN FLOTTAISON 3D -->
+            <div class='floating-symbols-field'>
+                <span class='sym-fly-1' title='Boîte Décorée'>🥫</span>
+                <span class='sym-fly-2' title='Boîte à Lait'>🥛</span>
+                <span class='sym-fly-3' title='Capsule EuroCap'>🍾</span>
+                <span class='sym-fly-4' title='Emballage Métallique'>📦</span>
+                <span class='sym-fly-5' title='Aérosol Haute Performance'>💈</span>
+                <span class='sym-fly-1' title='Capsule Couronne'>👑</span>
+            </div>
+
+            <div style='font-size: 1.15rem; color: #38BDF8; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;'>
+                PORTAIL DE DIAGNOSTIC D'EXCELLENCE OPÉRATIONNELLE 5S
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+        if st.button("🚀 ENTRER DANS L'APPLICATION 5S", use_container_width=True):
+            st.session_state.auth_step = 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ÉTAPE 1 : ACCUEIL PRESTIGE AVEC BADGE CLIQUABLE
+    elif auth_step == 1:
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
         st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
@@ -578,14 +641,13 @@ if not st.session_state.get("user_authenticated", False):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # GROS LOGO 5S FLOTTANT 3D EN DESSOUS (POUR FAIRE JOLI SUR LA PAGE D'ACCUEIL)
         st.markdown("""
-        <div class='logo-5s-3d-floating'>
-            <div class='logo-5s-3d-text'>✨ 5S ✨</div>
-            <div style='font-size: 1.4rem; font-weight: 800; color: #38BDF8; letter-spacing: 5px; text-transform: uppercase; margin-top: 15px;'>
+        <div class='welcome-hero-container' style='margin-top: 25px;'>
+            <div style='font-size: 2.2rem; font-weight: 900; color: #38BDF8;'>✨ 5S ✨</div>
+            <div style='font-size: 1.3rem; font-weight: 800; color: #FFFFFF; letter-spacing: 4px; text-transform: uppercase; margin-top: 10px;'>
                 SEIRI • SEITON • SEISO • SEIKETSU • SHITSUKE
             </div>
-            <div style='font-size: 1.1rem; color: #94A3B8; margin-top: 10px; font-weight: 600;'>
+            <div style='font-size: 1.05rem; color: #94A3B8; margin-top: 8px; font-weight: 600;'>
                 MÉTHODE D'EXCELLENCE OPÉRATIONNELLE LOGISTIQUE MASSILLY
             </div>
         </div>
@@ -616,7 +678,7 @@ if not st.session_state.get("user_authenticated", False):
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
         if st.button("⬅️ Retour à l'accueil", use_container_width=True):
-            st.session_state.auth_step = 1
+            st.session_state.auth_step = 0
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -727,7 +789,7 @@ if not st.session_state.get("user_authenticated", False):
             if st.button("🔓 COMMENCER LE DIAGNOSTIC DE ZONE", use_container_width=True):
                 st.session_state.user_zone = zone_select
                 st.session_state.user_authenticated = True
-                st.session_state.auth_step = 1
+                st.session_state.auth_step = 0
                 st.session_state.portal_shown = False
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
@@ -743,7 +805,7 @@ else:
         st.markdown("<div class='small-btn-container'>", unsafe_allow_html=True)
         if st.button("🔄 Changer d'utilisateur", use_container_width=True):
             st.session_state.user_authenticated = False
-            st.session_state.auth_step = 1
+            st.session_state.auth_step = 0
             st.session_state.audit_started = False
             st.session_state.current_q_idx = 0
             st.session_state.answers = {}
@@ -753,6 +815,7 @@ else:
             
     st.markdown("---")
 
+    # Onglets horizontaux de navigation
     onglets = ["📋 Saisie d'Audit terrain", "📊 Analyse & Historique", "🗺️ Rappel des Standards"]
     menu_actif = st.radio("Menu principal :", onglets, horizontal=True, key="menu_actif")
 
@@ -761,10 +824,9 @@ else:
     # ========================================== ONGLET 1 : SAISIE D'AUDIT COMPORTEMENTAL
     if menu_actif == "📋 Saisie d'Audit terrain":
         
-        if not st.session_state.get("audit_started", False):
+        if not st.session_state.audit_started:
             st.markdown("<div class='btn-start-3d'>", unsafe_allow_html=True)
-            zone_key = st.session_state.get('user_zone', 'Zone 1')
-            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[zone_key]['label']}\nSponsor Responsable : {ZONES_MASSILLY[zone_key]['sponsor']}"
+            btn_label = f"DÉMARRER UNE NOUVELLE VISITE 5S\n\n🚀 COMMENCER LE DIAGNOSTIC TECHNIQUE\n\n📍 Zone Active : {ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['label']}\nSponsor Responsable : {ZONES_MASSILLY[st.session_state.get('user_zone', 'Zone 1')]['sponsor']}"
             if st.button(btn_label, use_container_width=True):
                 st.session_state.audit_started = True
                 st.session_state.current_q_idx = 0
@@ -774,164 +836,130 @@ else:
             st.markdown("</div>", unsafe_allow_html=True)
             
         else:
-            idx = st.session_state.get("current_q_idx", 0)
+            idx = st.session_state.current_q_idx
+            total_q = len(CRITERES_OFFICIELS)
             
-            if idx < 15:
+            if idx < total_q:
                 crit = CRITERES_OFFICIELS[idx]
-                
-                st.progress(idx / 15)
-                st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Critère {idx+1} sur 15</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: right; font-size: 16px; color: #CBD5E1; font-weight: bold;'>Critère {idx + 1} sur {total_q}</p>", unsafe_allow_html=True)
+                st.progress((idx + 1) / total_q)
                 
                 st.markdown(f"""
-                <div class="question-card">
-                    <div class="question-cat">{crit['cat']}</div>
-                    <div class="question-text">{crit['txt']}</div>
+                <div class='question-card'>
+                    <div class='question-cat'>{crit['cat']}</div>
+                    <div class='question-text'>{crit['txt']}</div>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 15px;'>Valider l'état sur le terrain :</p>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size: 18px; font-weight: bold; color: #FFFFFF; margin-top: 15px;'>Évaluation terrain :</p>", unsafe_allow_html=True)
                 
-                col_o, col_n, col_na = st.columns(3)
-                with col_o:
-                    if st.button("🟢 OUI", use_container_width=True, key=f"btn_o_{idx}"):
+                col_btn1, col_btn2, col_btn3 = st.columns(3)
+                
+                with col_btn1:
+                    if st.button("🟢 OUI (Conforme)", key=f"btn_oui_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "OUI"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                with col_n:
-                    if st.button("🔴 NON", use_container_width=True, key=f"btn_n_{idx}"):
+                        
+                with col_btn2:
+                    if st.button("🔴 NON (Écart)", key=f"btn_non_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "NON"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                with col_na:
-                    if st.button("🔵 N/A", use_container_width=True, key=f"btn_na_{idx}"):
+                        
+                with col_btn3:
+                    if st.button("🔵 N/A (Non applicable)", key=f"btn_na_{idx}", use_container_width=True):
                         st.session_state.answers[crit["id"]] = "N/A"
                         st.session_state.current_q_idx += 1
                         st.rerun()
-                
+                        
                 if idx > 0:
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                    if st.button("⬅️ Retour à la question précédente", use_container_width=True, key=f"btn_prev_{idx}"):
+                    if st.button("⬅️ Question précédente", use_container_width=True):
                         st.session_state.current_q_idx -= 1
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                     
             else:
-                if st.session_state.get("audit_saved", False):
-                    st.balloons()
-                    if st.session_state.get("save_result_ok", False):
-                        st.success("🎉 DIAGNOSTIC ENREGISTRÉ ET SYNCHRONISÉ EN TEMPS RÉEL DANS GOOGLE SHEETS !")
-                    else:
-                        st.warning(f"⚠️ Diagnostic enregistré localement (Google Sheets offline : {st.session_state.get('save_result_err', '')})")
+                st.markdown("<div class='user-id-badge-3d'>📊 SYNTHÈSE DU DIAGNOSTIC 5S</div>", unsafe_allow_html=True)
+                
+                t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
+                t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
+                t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
+                
+                denom = t_oui + t_non
+                pct = round((t_oui / denom) * 100, 1) if denom > 0 else 0.0
+                
+                col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                col_m1.metric("Score Conforme", f"{t_oui} / 15")
+                col_m2.metric("Écarts Détectés", f"{t_non}")
+                col_m3.metric("Non Applicable", f"{t_na}")
+                col_m4.metric("Taux de Conformité", f"{pct} %")
+                
+                st.markdown("---")
+                
+                st.markdown("### 📝 Observations terrain & Actions")
+                obs = st.text_area("Remarques / Anomales observées pendant la visite :", height=100)
+                actions = st.text_area("Actions correctives immédiates engagées ou recommandées :", height=100)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+                if st.button("💾 ENREGISTRER L'AUDIT SUR GOOGLE SHEETS", use_container_width=True):
+                    zone_cle = st.session_state.get('user_zone', 'Zone 1')
+                    data_save = {
+                        "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "Zone": ZONES_MASSILLY[zone_cle]["label"],
+                        "Sponsor": ZONES_MASSILLY[zone_cle]["sponsor"],
+                        "Auditeur": st.session_state.get('user_name', 'Inconnu'),
+                        "Role": st.session_state.get('user_role', 'Auditeur'),
+                        "Score_Total": t_oui,
+                        "Pourcentage": pct,
+                        "Observations": obs,
+                        "Actions_Correctives": actions
+                    }
+                    for c in CRITERES_OFFICIELS:
+                        data_save[c["id"]] = st.session_state.answers.get(c["id"], "N/A")
                         
-                    st.subheader("Synthèse enregistrée")
-                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                    t_app = 15 - t_na
-                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                    
-                    c_res1, c_res2 = st.columns(2)
-                    with c_res1:
-                        st.metric("Critères Conformités", f"{t_oui} / {t_app}")
-                    with c_res2:
-                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                        
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                    if st.button("🚀 COMMENCER UN NOUVEL AUDIT 5S", use_container_width=True):
-                        st.session_state.audit_started = False
-                        st.session_state.audit_saved = False
-                        st.session_state.current_q_idx = 0
-                        st.session_state.answers = {}
-                        st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    
-                else:
-                    st.success("🎉 Évaluation terminée !")
-                    st.subheader("Synthèse de l'évaluation")
-                    
-                    t_oui = sum(1 for v in st.session_state.answers.values() if v == "OUI")
-                    t_non = sum(1 for v in st.session_state.answers.values() if v == "NON")
-                    t_na = sum(1 for v in st.session_state.answers.values() if v == "N/A")
-                    t_app = 15 - t_na
-                    score_final_pct = int((t_oui / t_app) * 100) if t_app > 0 else 0
-                    
-                    col_s1, col_s2 = st.columns(2)
-                    with col_s1:
-                        st.metric("Critères Conformités", f"{t_oui} / {t_app} conformes")
-                    with col_s2:
-                        st.metric("Taux de Conformité Final", f"{score_final_pct} %")
-                    
-                    st.markdown("### 📝 Observations terrain")
-                    obs = st.text_area("Remarques / Anomalies constatées :")
-                    act = st.text_area("Plan d'action corrective :")
-                    
-                    with st.expander("🔎 Afficher le récapitulatif détaillé"):
-                        for c in CRITERES_OFFICIELS:
-                            rep = st.session_state.answers.get(c["id"], "N/A")
-                            bullet = "🟢" if rep == "OUI" else ("🔴" if rep == "NON" else "🔵")
-                            st.markdown(f"{bullet} **{c['cat']}** : {c['txt']} → **{rep}**")
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_end1, col_end2 = st.columns(2)
-                    with col_end1:
-                        st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-                        if st.button("❌ Réinitialiser l'audit", use_container_width=True):
-                            st.session_state.audit_started = False
-                            st.session_state.current_q_idx = 0
-                            st.session_state.answers = {}
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    with col_end2:
-                        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-                        if st.button("💾 ENREGISTRER LE DIAGNOSTIC", use_container_width=True):
-                            sc_num = {k: (1 if v == "OUI" else (0 if v == "NON" else "")) for k, v in st.session_state.answers.items()}
-                            zone_key = st.session_state.get('user_zone', 'Zone 1')
-                            
-                            row_data = {
-                                "Date": datetime.now().strftime("%Y-%m-%d"),
-                                "Zone": zone_key,
-                                "Sponsor": ZONES_MASSILLY[zone_key]["sponsor"],
-                                "Auditeur": st.session_state.get('user_name', ''),
-                                "Role": st.session_state.get('user_role', ''),
-                                "Score_Total": t_oui,
-                                "Pourcentage": score_final_pct,
-                                "Observations": obs,
-                                "Actions_Correctives": act
-                            }
-                            row_data.update(sc_num)
-                            
-                            synced_gsheets, err_msg = sauvegarder_audit_local(row_data)
-                            st.session_state.audit_saved = True
-                            st.session_state.save_result_ok = synced_gsheets
-                            st.session_state.save_result_err = err_msg
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
+                    ok, err = sauvegarder_audit_local(data_save)
+                    st.session_state.audit_saved = True
+                    st.session_state.save_result_ok = ok
+                    st.session_state.save_result_err = err
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
 
-    # ========================================== ONGLET 2 : TABLEAU DE BORD LOGISTIQUE
+                if st.session_state.get("audit_saved", False):
+                    if st.session_state.get("save_result_ok", False):
+                        st.success("✅ Audit enregistré avec succès dans Google Sheets et dans la base locale !")
+                    else:
+                        st.warning("⚠️ Audit sauvegardé localement (Backup CSV). Connexion Google Sheets en attente.")
+                        
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+                if st.button("🔄 NOUVEL AUDIT TERRAIN", use_container_width=True):
+                    st.session_state.audit_started = False
+                    st.session_state.current_q_idx = 0
+                    st.session_state.answers = {}
+                    st.session_state.audit_saved = False
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    # ========================================== ONGLET 2 : ANALYSE & HISTORIQUE
     elif menu_actif == "📊 Analyse & Historique":
-        st.subheader("Historique d'Amélioration Continue")
-        df = charger_audits()
-        if df.empty or len(df) == 0:
-            st.warning("Aucune donnée enregistrée dans ce mode d'accès.")
+        st.markdown("### Historique des audits")
+        df_hist = charger_audits()
+        if not df_hist.empty:
+            st.dataframe(df_hist, use_container_width=True)
         else:
-            tot = len(df)
-            moy = int(df["Pourcentage"].mean()) if "Pourcentage" in df.columns else 0
-            k_1, k_2 = st.columns(2)
-            with k_1:
-                st.metric("Audits Complétés", tot)
-            with k_2:
-                st.metric("Moyenne Globale 5S", f"{moy} %")
-            st.markdown("### Historique des audits")
-            st.dataframe(df, use_container_width=True)
+            st.info("Aucun audit enregistré pour le moment.")
 
     # ========================================== ONGLET 3 : RAPPEL DES STANDARDS
     elif menu_actif == "🗺️ Rappel des Standards":
-        st.subheader("Les 5 Étapes du Standard 5S Massilly")
+        st.markdown("### Les 5 Piliers de la Méthode 5S chez Massilly")
         st.markdown("""
-        - **1. Seiri (Trier)** : Supprimer l'inutile du poste de travail.
-        - **2. Seiton (Ranger)** : Une place pour chaque chose, chaque chose à sa place.
-        - **3. Seiso (Nettoyer)** : Nettoyer c'est inspecter et détecter les anomalies.
-        - **4. Seiketsu (Standardiser)** : Formaliser les règles et les méthodes visuelles.
-        - **5. Shitsuke (Maintenir)** : Ancrer la rigueur et réaliser les rituels d'audit.
+        - **1. Seiri (Trier)** : Éliminer l'inutile dans les allées et postes de travail.
+        - **2. Seiton (Ranger)** : Une place pour chaque outil, bac ou palette.
+        - **3. Seiso (Nettoyer)** : Inspection visuelle et propreté des zones.
+        - **4. Seiketsu (Standardiser)** : Règles claires et check-lists visuelles.
+        - **5. Shitsuke (Maintenir)** : Rigueur quotidienne et audits réguliers.
         """)
