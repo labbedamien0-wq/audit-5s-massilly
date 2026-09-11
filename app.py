@@ -144,6 +144,14 @@ if "test_mode" not in st.session_state:
     st.session_state.test_mode = False
 if "portal_shown" not in st.session_state:
     st.session_state.portal_shown = False
+if "auth_step" not in st.session_state:
+    st.session_state.auth_step = 0
+if "selected_role" not in st.session_state:
+    st.session_state.selected_role = "Sponsor de zone"
+if "selected_name" not in st.session_state:
+    st.session_state.selected_name = ""
+if "selected_zone" not in st.session_state:
+    st.session_state.selected_zone = "Zone 1"
 
 # Définition dynamique des fichiers de données selon le mode (Réel vs Test)
 if st.session_state.test_mode:
@@ -327,6 +335,43 @@ st.markdown("""
         transform: perspective(800px) rotateX(10deg);
         animation: floatBadge 3.2s ease-in-out infinite alternate !important;
         border-bottom: 8px solid #005F73 !important; /* Semelle 3D plaque */
+    }
+
+    /* Style spécifique pour le bouton badge 3D de la page d'accueil */
+    .user-id-badge-3d-btn button {
+        background: linear-gradient(135deg, #1E293B, #0B1329) !important;
+        border: 3px solid #38BDF8 !important;
+        border-radius: 20px !important;
+        color: #FFFFFF !important;
+        text-align: center !important;
+        padding: 22px 30px !important;
+        font-size: 1.65rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 4px !important;
+        margin: 25px auto 40px auto !important;
+        width: 100% !important;
+        max-width: 850px !important;
+        height: auto !important;
+        min-height: 90px !important;
+        box-shadow: 
+            0 15px 35px rgba(56, 189, 248, 0.4),
+            inset 0 0 25px rgba(56, 189, 248, 0.3) !important;
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.7) !important;
+        transform: perspective(800px) rotateX(10deg) !important;
+        animation: floatBadge 3.2s ease-in-out infinite alternate !important;
+        border-bottom: 8px solid #005F73 !important;
+        cursor: pointer !important;
+    }
+    .user-id-badge-3d-btn button:hover {
+        filter: brightness(1.25) !important;
+        border-color: #38BDF8 !important;
+        box-shadow: 
+            0 22px 50px rgba(56, 189, 248, 0.7),
+            inset 0 0 35px rgba(56, 189, 248, 0.5) !important;
+        transform: perspective(800px) rotateX(0deg) translateY(-8px) scale(1.02) !important;
+    }
+    .user-id-badge-3d-btn button::before {
+        display: none !important;
     }
 
     @keyframes floatBadge {
@@ -870,70 +915,166 @@ if st.session_state.user_authenticated and not st.session_state.portal_shown:
     st.session_state.portal_shown = True
 
 
-# ========================================== ÉCRAN 1 : CONNEXION ET CRÉATION DE PROFIL
+# ========================================== ÉCRAN 1 : PROCESSUS D'IDENTIFICATION MULTI-ÉTAPES
 if not st.session_state.user_authenticated:
-    # Grosse plaque 3D "PORTAIL D'IDENTIFICATION" (Remplace la ligne blanche inutile et s'affiche plus gros)
-    st.markdown("<div class='user-id-badge-3d'>📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR</div>", unsafe_allow_html=True)
+    step = st.session_state.get("auth_step", 0)
     
-    # 1. Sélection du Rôle
-    role = st.selectbox(
-        "Sélectionnez votre rôle :",
-        ["Sponsor de zone", "Référent 5S", "Éditeur (Méthodes / Alternant)"]
-    )
-    
-    # Liste nominative de l'usine
-    personnes_massilly = [
-        "Labbé Damien (Alternant)",
-        "Audrey Sordet (Sponsor Z1)",
-        "Anthony Duplessis (Sponsor Z2)",
-        "Jonathan Mele (Sponsor Z3)",
-        "Thomas Collin (Sponsor Z4)",
-        "Gaspard Sommereux (Sponsor Z5)",
-        "Mariia Leliukh (Sponsor Z6)",
-        "Céline Hereng (Sponsor Z7)",
-        "Dimitri Dupasquier (Sponsor Z8)",
-        "Frédéric Bouvy (Sponsor Z9)",
-        "Nathalie Berthelin (Sponsor Z10)",
-        "Autre (Saisie manuelle)..."
-    ]
-    
-    # 2. Sélection du Nom
-    nom_select = st.selectbox("Sélectionnez votre Prénom & Nom :", personnes_massilly)
-    
-    if nom_select == "Autre (Saisie manuelle)...":
-        nom_complet = st.text_input("Saisissez votre Prénom et Nom :")
-    else:
-        nom_complet = nom_select.split(" (")[0]
+    # --------------------------------------------------------------------------
+    # ÉTAPE 0 : PAGE D'ACCUEIL AVEC ACCÈS AU PORTAIL
+    # --------------------------------------------------------------------------
+    if step == 0:
+        st.markdown("<div class='user-id-badge-3d-btn'>", unsafe_allow_html=True)
+        if st.button("📋 PORTAIL D'IDENTIFICATION DE L'UTILISATEUR", use_container_width=True, key="btn_enter_portal"):
+            st.session_state.auth_step = 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------------------------
+    # ÉTAPE 1 : CHOIX DU RÔLE (SPONSOR DE ZONE, RÉFÉRENT 5S, ADMINISTRATEUR)
+    # --------------------------------------------------------------------------
+    elif step == 1:
+        st.markdown("<div class='user-id-badge-3d'>📋 SÉLECTIONNEZ VOTRE RÔLE</div>", unsafe_allow_html=True)
         
-    # 3. Sélection de la Zone
-    liste_zones = list(ZONES_MASSILLY.keys())
-    zone_select = st.selectbox(
-        "Zone logistique ciblée :",
-        liste_zones,
-        format_func=lambda x: ZONES_MASSILLY[x]["label"]
-    )
-    
-    # Choix du Mode Test
-    st.markdown("---")
-    st.markdown("### Configuration de la base de données")
-    st.session_state.test_mode = st.checkbox(
-        "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
-        value=st.session_state.test_mode
-    )
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
-    if st.button("🔓 ENTRER SUR L'APPLICATION", use_container_width=True):
-        if not nom_complet.strip():
-            st.error("Veuillez renseigner votre nom pour continuer.")
+        col_r1, col_r2, col_r3 = st.columns(3)
+        with col_r1:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("🎯\n\nSponsor de zone", use_container_width=True, key="btn_role_sponsor"):
+                st.session_state.selected_role = "Sponsor de zone"
+                st.session_state.auth_step = 2
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with col_r2:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("🔍\n\nRéférent 5S", use_container_width=True, key="btn_role_referent"):
+                st.session_state.selected_role = "Référent 5S"
+                st.session_state.auth_step = 2
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with col_r3:
+            st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+            if st.button("⚙️\n\nAdministrateur", use_container_width=True, key="btn_role_admin"):
+                st.session_state.selected_role = "Administrateur"
+                st.session_state.auth_step = 2
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour à l'accueil", use_container_width=True, key="back_to_0"):
+            st.session_state.auth_step = 0
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------------------------
+    # ÉTAPE 2 : SÉLECTION DU SPONSOR OU DU NOM
+    # --------------------------------------------------------------------------
+    elif step == 2:
+        role_label = st.session_state.get("selected_role", "Sponsor de zone")
+        st.markdown(f"<div class='user-id-badge-3d'>👤 SÉLECTION DU NOM ({role_label.upper()})</div>", unsafe_allow_html=True)
+        
+        if role_label == "Sponsor de zone":
+            personnes_massilly = [
+                "Audrey Sordet (Sponsor Z1 - Filmeuse & Quais)",
+                "Anthony Duplessis (Sponsor Z2 - Bureaux Expédition)",
+                "Jonathan Mele (Sponsor Z3 - Quai Chargement)",
+                "Thomas Collin (Sponsor Z4 - Préparation Commande)",
+                "Gaspard Sommereux (Sponsor Z5 - Emplacements Boîtes)",
+                "Mariia Leliukh (Sponsor Z6 - Palettier)",
+                "Céline Hereng (Sponsor Z7 - Réception MP)",
+                "Dimitri Dupasquier (Sponsor Z8 - Stockage Métal)",
+                "Frédéric Bouvy (Sponsor Z9 - Local Joint)",
+                "Nathalie Berthelin (Sponsor Z10 - Produits Dangereux)",
+                "Labbé Damien (Alternant)",
+                "Autre (Saisie manuelle)..."
+            ]
+        elif role_label == "Référent 5S":
+            personnes_massilly = [
+                "Labbé Damien (Alternant / Référent)",
+                "Référent Logistique Usine",
+                "Autre (Saisie manuelle)..."
+            ]
         else:
-            st.session_state.user_role = role
-            st.session_state.user_name = nom_complet
+            personnes_massilly = [
+                "Labbé Damien (Administrateur)",
+                "Administrateur Système",
+                "Autre (Saisie manuelle)..."
+            ]
+            
+        nom_select = st.selectbox("Sélectionnez votre Prénom & Nom :", personnes_massilly)
+        
+        if nom_select == "Autre (Saisie manuelle)...":
+            nom_complet = st.text_input("Saisissez votre Prénom et Nom :")
+        else:
+            nom_complet = nom_select.split(" (")[0]
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+        if st.button("CONTINUER VERS LE CHOIX DE ZONE ➡️", use_container_width=True, key="go_to_zone"):
+            if not nom_complet.strip():
+                st.error("Veuillez renseigner votre nom pour continuer.")
+            else:
+                st.session_state.selected_name = nom_complet
+                st.session_state.auth_step = 3
+                st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour au choix du rôle", use_container_width=True, key="back_to_1"):
+            st.session_state.auth_step = 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------------------------
+    # ÉTAPE 3 : CHOIX DE LA ZONE LOGISTIQUE CIBLÉE ET VALIDATION FINALE
+    # --------------------------------------------------------------------------
+    elif step == 3:
+        st.markdown("<div class='user-id-badge-3d'>📍 ZONE LOGISTIQUE CIBLÉE</div>", unsafe_allow_html=True)
+        
+        st.info(f"👤 **Profil configuré :** {st.session_state.get('selected_name', '')} ({st.session_state.get('selected_role', '')})")
+        
+        liste_zones = list(ZONES_MASSILLY.keys())
+        zone_select = st.selectbox(
+            "Sélectionnez la zone logistique ciblée :",
+            liste_zones,
+            format_func=lambda x: ZONES_MASSILLY[x]["label"]
+        )
+        
+        st.markdown("---")
+        st.markdown("### Configuration de la base de données")
+        st.session_state.test_mode = st.checkbox(
+            "🧪 Activer le MODE TEST d'entraînement (Pour valider les diagnostics sans toucher aux statistiques de l'usine)",
+            value=st.session_state.get("test_mode", False)
+        )
+        
+        # Bouton de test rapide Google Sheets
+        if st.button("🔌 TESTER CONNEXION GOOGLE SHEETS", use_container_width=True, key="btn_test_gsheets_step3"):
+            conn = get_gsheets_connection()
+            if conn is not None:
+                try:
+                    df_test = conn.read(ttl=0)
+                    st.success("✅ Connexion Google Sheets fonctionnelle et synchronisée !")
+                except Exception as e_test:
+                    st.error(f"⚠️ Échec de connexion : {e_test}")
+            else:
+                st.error("⚠️ La connexion Google Sheets n'est pas initialisée. Vérifiez les secrets.")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='valide-btn'>", unsafe_allow_html=True)
+        if st.button("🔓 COMMENCER LE DIAGNOSTIC DE ZONE", use_container_width=True, key="btn_auth_finish"):
+            st.session_state.user_role = st.session_state.get("selected_role", "Sponsor de zone")
+            st.session_state.user_name = st.session_state.get("selected_name", "Utilisateur")
             st.session_state.user_zone = zone_select
             st.session_state.user_authenticated = True
-            st.session_state.portal_shown = False # Réinitialise l'ouverture cinématique pour l'accès
+            st.session_state.portal_shown = False
             st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown("<br><div class='back-btn-container'>", unsafe_allow_html=True)
+        if st.button("⬅️ Retour à la sélection du nom", use_container_width=True, key="back_to_2"):
+            st.session_state.auth_step = 2
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================== APPLICATION PRINCIPALE (UTILISATEUR CONNECTÉ)
 else:
@@ -947,6 +1088,7 @@ else:
         st.markdown("<div class='small-btn-container'>", unsafe_allow_html=True)
         if st.button("🔄 Changer d'utilisateur", use_container_width=True):
             st.session_state.user_authenticated = False
+            st.session_state.auth_step = 0
             st.session_state.audit_started = False
             st.session_state.current_q_idx = 0
             st.session_state.answers = {}
